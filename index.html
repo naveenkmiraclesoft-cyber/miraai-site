@@ -96,14 +96,13 @@
 		<div class="nav-progress" id="navProgress" aria-hidden="true"></div>
 		<div class="nav-inner">
 			<a class="nav-logo" href="#hero" aria-label="miraAI home">
-				<img src="https://images.miraclesoft.com/2025/nov/miraai-light-horizontal.svg" alt="miraAI" height="34">
+				<img class="logo-dark" src="https://images.miraclesoft.com/2025/nov/miraai-light-horizontal.svg" alt="miraAI" height="34">
+				<img class="logo-white" src="assets/miraai-white-horizontal.svg" alt="" aria-hidden="true" height="34">
 			</a>
 			<nav class="nav-links" aria-label="Primary">
 				<a href="#platform" data-spy="platform">Platform</a>
 				<a href="#use-cases" data-spy="use-cases">Use Cases</a>
-				<a href="#why" data-spy="why">Why miraAI</a>
 				<a href="#solutions" data-spy="solutions">Solutions</a>
-				<a href="#testimonials" data-spy="testimonials">Customers</a>
 				<a href="#faq" data-spy="faq">FAQ</a>
 			</nav>
 			<a class="btn btn-nav" href="#cta"><span>Speak with an Expert</span></a>
@@ -120,9 +119,7 @@
 		<div class="nav-mobile" id="navMobile">
 			<a href="#platform">Platform</a>
 			<a href="#use-cases">Use Cases</a>
-			<a href="#why">Why miraAI</a>
 			<a href="#solutions">Solutions</a>
-			<a href="#testimonials">Customers</a>
 			<a href="#faq">FAQ</a>
 			<a class="btn btn-nav" href="#cta"><span>Speak with an Expert</span></a>
 		</div>
@@ -138,7 +135,6 @@
 
 			<div class="hero-inner container">
 				<div class="hero-copy">
-					<p class="hero-badge"><span class="hb-dot" aria-hidden="true"></span>New · miraAI 2.0 — Agent Orchestration</p>
 					<h1 class="hero-title" id="heroTitle">
 						<span class="hw">miraAI</span>
 						<span class="hw hw-to"><em class="to">to</em></span>
@@ -151,44 +147,21 @@
 					</div>
 				</div>
 
-				<div class="hero-visual" role="group" aria-label="miraAI product demo">
+				<div class="hero-visual" role="group" aria-label="miraAI product video">
 					<div class="hero-frame" id="heroFrame">
 						<div class="hero-frame-glow" aria-hidden="true"></div>
 						<div class="hero-media">
-							<video class="hero-video" id="heroVideo" autoplay loop muted playsinline preload="metadata"
-								poster="https://images.miraclesoft.com/v3/mira-ai/mira-ai-header.png">
+							<video class="hero-video" id="heroVideo" autoplay loop muted playsinline controls preload="metadata"
+								poster="https://images.miraclesoft.com/v3/mira-ai/mira-ai-header.png" aria-label="miraAI product demo video">
 								<source src="assets/miraai-hero-demo.mp4" type="video/mp4">
 							</video>
-							<div class="hero-demo" id="heroDemo" aria-hidden="true">
-								<div class="hd-bar"><span class="hd-dot"></span><span class="hd-dot"></span><span class="hd-dot"></span><span class="hd-title">miraAI Console</span></div>
-								<div class="hd-body">
-									<p class="hd-prompt"><i class="fa-solid fa-wand-magic-sparkles"></i>How many open POs did CS Parts log this week?</p>
-									<div class="hd-step hd-step-1"><i class="fa-solid fa-diagram-project"></i><span>Agent Sphere · routing intent</span></div>
-									<div class="hd-step hd-step-2"><i class="fa-solid fa-database"></i><span>Data Sphere · SQL generated</span></div>
-									<div class="hd-step hd-step-3"><i class="fa-solid fa-circle-check"></i><span>142 open POs · 0 anomalies</span></div>
-									<div class="hd-trace"><span>Trace · logged</span><span>1.2s</span><span>GPT-4o</span></div>
-								</div>
+							<div class="hero-video-note" id="heroVideoNote">
+								<i class="fa-solid fa-film" aria-hidden="true"></i>
+								<span>Video to be uploaded here</span>
 							</div>
-							<button class="hero-media-toggle" id="heroMediaToggle" type="button" aria-label="Pause demo video" aria-pressed="false">
-								<i class="fa-solid fa-pause"></i>
+							<button class="hero-media-toggle" id="heroMediaToggle" type="button" aria-label="Play demo video" aria-pressed="false">
+								<i class="fa-solid fa-play"></i>
 							</button>
-						</div>
-					</div>
-				</div>
-
-				<div class="hero-proof">
-					<p class="hero-eyebrow">Trusted by</p>
-					<div class="ticker hero-ticker" aria-label="Integration partners">
-						<div class="ticker-track" data-ticker="1">
-							<span class="partner"><i class="fa-brands fa-sap"></i>SAP</span>
-							<span class="partner"><i class="fa-brands fa-microsoft"></i>Microsoft</span>
-							<span class="partner"><i class="fa-brands fa-salesforce"></i>Salesforce</span>
-							<span class="partner"><i class="fa-brands fa-microsoft"></i>SharePoint</span>
-							<span class="partner"><i class="fa-brands fa-google"></i>BigQuery</span>
-							<span class="partner"><i class="fa-brands fa-azure"></i>Azure</span>
-							<span class="partner"><i class="fa-brands fa-aws"></i>AWS</span>
-							<span class="partner"><i class="fa-brands fa-google"></i>GCP</span>
-							<span class="partner"><i class="fa-solid fa-database"></i>Oracle DB</span>
 						</div>
 					</div>
 				</div>
@@ -433,37 +406,7 @@
 			</div>
 		</section>
 
-		<!-- 9 · Landscape quadrant -->
-		<section class="section section-dark" id="why">
-			<div class="container">
-				<header class="section-head center reveal">
-					<p class="eyebrow">Landscape</p>
-					<h2>Powering AI Transformation</h2>
-					<p class="section-sub">miraAI leads with governed workflows, RAG, document intelligence, and an expansive suite of integrations.</p>
-				</header>
-
-				<div class="quadrant reveal" id="quadrant">
-					<div class="quad-grid" aria-label="Market quadrant: miraAI positioned as leader">
-						<span class="quad-label quad-tl">Niche</span>
-						<span class="quad-label quad-tr">Contenders</span>
-						<span class="quad-label quad-bl">High Performers</span>
-						<span class="quad-label quad-br q-high">Leaders</span>
-						<span class="quad-axis quad-x">Integration breadth <b>→</b></span>
-						<span class="quad-axis quad-y">Enterprise readiness <b>↑</b></span>
-						<span class="quad-dot qd-1" aria-hidden="true"></span>
-						<span class="quad-dot qd-2" aria-hidden="true"></span>
-						<span class="quad-dot qd-3" aria-hidden="true"></span>
-						<span class="quad-dot qd-4" aria-hidden="true"></span>
-						<span class="quad-dot qd-5" aria-hidden="true"></span>
-						<span class="quad-brand" aria-hidden="true"><i class="fa-solid fa-brain"></i><span>miraAI</span></span>
-					</div>
-				</div>
-
-				<p class="quad-cta reveal"><a class="btn btn-shiny btn-white" href="#cta"><span>Get a Demo <i class="fa-solid fa-arrow-right"></i></span></a></p>
-			</div>
-		</section>
-
-		<!-- 10 · Solutions -->
+		<!-- 9 · Solutions -->
 		<section class="section" id="solutions">
 			<div class="container">
 				<header class="section-head center reveal">
@@ -507,122 +450,7 @@
 			</div>
 		</section>
 
-		<!-- 11 · Trusted by (logos) -->
-		<section class="section section-light cust" id="trusted">
-			<div class="container">
-				<header class="section-head center reveal">
-					<p class="eyebrow">Customers</p>
-					<h2>Trusted by Leading Enterprises</h2>
-				</header>
-
-				<div class="mask-edge reveal">
-					<div class="ticker cust-ticker">
-						<div class="ticker-track" data-ticker="2">
-							<span class="c-logo"><i class="fa-brands fa-sap"></i>SAP</span>
-							<span class="c-logo"><i class="fa-brands fa-microsoft"></i>Microsoft</span>
-							<span class="c-logo"><i class="fa-brands fa-salesforce"></i>Salesforce</span>
-							<span class="c-logo"><i class="fa-brands fa-google"></i>Google Cloud</span>
-							<span class="c-logo"><i class="fa-brands fa-aws"></i>AWS</span>
-							<span class="c-logo"><i class="fa-brands fa-azure"></i>Azure</span>
-							<span class="c-logo"><i class="fa-brands fa-oracle"></i>Oracle</span>
-							<span class="c-logo"><i class="fa-solid fa-snowflake"></i>Snowflake</span>
-							<span class="c-logo"><i class="fa-brands fa-google"></i>Workspace</span>
-							<span class="c-logo"><i class="fa-solid fa-database"></i>BigQuery</span>
-						</div>
-					</div>
-				</div>
-			</div>
-		</section>
-
-		<!-- 12 · Testimonials -->
-		<section class="section section-dark" id="testimonials">
-			<div class="container">
-				<header class="section-head center reveal">
-					<p class="eyebrow">Clients testimonials</p>
-					<h2>Loved By Teams Built For Speed</h2>
-				</header>
-
-				<div class="t-underlay reveal">
-					<div class="ticker t-main" id="testiTicker">
-						<div class="ticker-track t-track-wide" data-ticker="3">
-
-							<article class="t-card">
-								<div class="t-logo">HS</div>
-								<div class="t-photo">EM</div>
-								<div class="t-quote">"miraAI turned our manual reporting pipeline into self-serve analytics. Health officials now generate their own insights in minutes, not weeks."</div>
-								<div class="t-author">
-									<div class="t-name">Dr. Elena Marchetti</div>
-									<div class="t-role">Chief Data Officer · State Health Analytics Office</div>
-								</div>
-							</article>
-
-							<article class="t-card">
-								<div class="t-logo">GH</div>
-								<div class="t-photo">MF</div>
-								<div class="t-quote">"We rolled miraAI out across 40+ franchise locations. Consistent quality, real-time alerts, and zero manual inspections."</div>
-								<div class="t-author">
-									<div class="t-name">Marcus Feld</div>
-									<div class="t-role">VP of Operations · Grill Horizons</div>
-								</div>
-							</article>
-
-							<article class="t-card">
-								<div class="t-logo">VM</div>
-								<div class="t-photo">AC</div>
-								<div class="t-quote">"The conversational shopping assistant lifted order completion and let customers do everything in plain language — even by voice."</div>
-								<div class="t-author">
-									<div class="t-name">Amy Chen</div>
-									<div class="t-role">Head of Digital Retail · Vivid Market</div>
-								</div>
-							</article>
-
-							<article class="t-card">
-								<div class="t-logo">NS</div>
-								<div class="t-photo">PN</div>
-								<div class="t-quote">"EDI errors that used to take days to resolve are now diagnosed and explained to our partners automatically, 24x7."</div>
-								<div class="t-author">
-									<div class="t-name">Priya Nair</div>
-									<div class="t-role">Logistics Integration Director · NorthStar Freight</div>
-								</div>
-							</article>
-
-							<article class="t-card">
-								<div class="t-logo">MB</div>
-								<div class="t-photo">TB</div>
-								<div class="t-quote">"Invoice processing went from a backlog nightmare to an automated pipeline with human-in-the-loop validation. Accuracy keeps improving."</div>
-								<div class="t-author">
-									<div class="t-name">Tom Bergström</div>
-									<div class="t-role">Director of Finance Ops · MediCorp Billing</div>
-								</div>
-							</article>
-
-							<article class="t-card">
-								<div class="t-logo">CF</div>
-								<div class="t-photo">RN</div>
-								<div class="t-quote">"The unified layer over our contracts, spreadsheets, and CRM gave executives answers on the spot — no dashboards required."</div>
-								<div class="t-author">
-									<div class="t-name">Rebecca Navarro</div>
-									<div class="t-role">Chief Data &amp; AI Officer · Continental Finance Group</div>
-								</div>
-							</article>
-
-							<article class="t-card">
-								<div class="t-logo">AT</div>
-								<div class="t-photo">SO</div>
-								<div class="t-quote">"Deploying on-prem in our regulated environment was painless. Governance, audit trails, and drift detection give our compliance team confidence."</div>
-								<div class="t-author">
-									<div class="t-name">Sean O'Brien</div>
-									<div class="t-role">IT Compliance Lead · Atlantic Trust Bank</div>
-								</div>
-							</article>
-
-						</div>
-					</div>
-				</div>
-			</div>
-		</section>
-
-		<!-- FAQ -->
+		<!-- 10 · FAQ -->
 		<section class="section" id="faq">
 			<div class="container container-narrow">
 				<header class="section-head center reveal">
@@ -679,7 +507,8 @@
 		<div class="container">
 			<div class="footer-top">
 				<div class="footer-brand">
-					<img src="https://images.miraclesoft.com/2025/nov/miraai-light-horizontal.svg" alt="miraAI" height="40">
+					<img class="footer-mss" src="assets/miracle-logo-white.svg" alt="Miracle Software Systems" height="34">
+					<img class="footer-miraai" src="assets/miraai-white-horizontal.svg" alt="miraAI" height="40">
 					<p>A global IT services company for your modern technology needs. We're here, across the world, with top talent and innovative solutions for the digital age and beyond.</p>
 					<div class="footer-socials">
 						<a href="https://facebook.com/miracle45625/" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
@@ -719,7 +548,6 @@
 			</div>
 			<div class="footer-bottom">
 				<p>© 2026 Miracle Software Systems, Inc. All rights reserved.</p>
-				<p class="footer-attribution">Made by the team behind <a href="https://www.miraclesoft.com/products/mporto" target="_blank" rel="noopener">MPorto</a>.</p>
 			</div>
 		</div>
 	</footer>

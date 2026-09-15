@@ -130,7 +130,6 @@
 		if (!("IntersectionObserver" in window) || reduced) {
 			items.forEach(function (el) {
 				el.classList.add("in-view");
-				if (el.id === "quadrant") el.classList.add("quad-in");
 			});
 			return;
 		}
@@ -139,9 +138,6 @@
 				entries.forEach(function (entry) {
 					if (!entry.isIntersecting) return;
 					entry.target.classList.add("in-view");
-					if (entry.target.id === "quadrant") {
-						entry.target.classList.add("quad-in");
-					}
 					io.unobserve(entry.target);
 				});
 			},
