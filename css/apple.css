@@ -1,0 +1,108 @@
+/* ============================================================
+   miraAI · apple.css
+   Apple-style motion layer. Loaded AFTER style.css.
+   Every effect degrades gracefully: reduced-motion, coarse
+   pointers, and JS-less environments keep content visible.
+   ============================================================ */
+
+/* ------------------------------------------------------------
+   1 · Hero scroll-zoom (AirPods/iPhone-style exit)
+   JS sets --hero-* custom properties per frame; CSS applies.
+   ------------------------------------------------------------ */
+.hero-copy,
+.hero-media{
+	will-change:opacity,transform;
+}
+.hero.hz .hero-copy{
+	opacity:var(--hero-copy-o,1);
+	transform:translate3d(0,var(--hero-copy-y,0),0);
+	filter:blur(var(--hero-copy-b,0px));
+}
+.hero.hz .hero-media{
+	opacity:var(--hero-media-o,1);
+	transform:scale(var(--hero-media-s,1)) translate3d(0,var(--hero-media-y,0),0);
+}
+@media (max-width:559px){
+	.hero.hz .hero-copy,.hero.hz .hero-media{filter:none;transform:none}
+}
+
+/* ------------------------------------------------------------
+   2 · Staggered grid entrances (driven by js/apple.js)
+   Base guards so non-staggered sections are unaffected.
+   ------------------------------------------------------------ */
+.feature-grid > .fc:not(.fc-row),
+.cert-grid > .cert,
+.sol-grid > .sol,
+.integ-grid > .integ,
+.uc-tabs > .uc-tab{
+	transform:translate3d(0,var(--lift,0),0) rotateX(var(--rx,0)) rotateY(var(--ry,0));
+	transform-style:preserve-3d;
+	transition:transform .12s ease-out,
+		opacity .7s ease,
+		box-shadow .3s var(--ease-spring),
+		border-color .3s ease;
+}
+.feature-grid > .fc:not(.fc-row):hover,
+.cert-grid > .cert:hover,
+.sol-grid > .sol:hover,
+.integ-grid > .integ:hover,
+.uc-tabs > .uc-tab:hover{
+	transform:translate3d(0,var(--lift,-4px),0) rotateX(var(--rx,0)) rotateY(var(--ry,0));
+}
+
+/* ------------------------------------------------------------
+   3 · Magnetic buttons (JS sets --mx / --my)
+   ------------------------------------------------------------ */
+.btn:not(.btn-nav){
+	transform:translate3d(var(--mx,0),var(--my,0),0);
+	transition:transform .28s var(--ease-spring),
+		background .28s ease,box-shadow .28s ease,color .28s ease;
+}
+.btn:not(.btn-nav):hover{
+	transform:translate3d(var(--mx,0),var(--my,0),0) translateY(-2px);
+}
+
+/* ------------------------------------------------------------
+   4 · Smooth section-band transitions (Apple-style color melt)
+   ------------------------------------------------------------ */
+.section-light{
+	background:
+		linear-gradient(180deg,var(--bg) 0%,transparent 100%) top center / 100% 120px no-repeat,
+		linear-gradient(0deg,var(--bg) 0%,transparent 100%) bottom center / 100% 120px no-repeat,
+		var(--bg-soft);
+}
+.section-dark{
+	background:
+		linear-gradient(180deg,var(--bg) 0%,transparent 100%) top center / 100% 150px no-repeat,
+		linear-gradient(0deg,var(--bg) 0%,transparent 100%) bottom center / 100% 150px no-repeat,
+		var(--invert-bg);
+}
+
+/* ------------------------------------------------------------
+   5 · Hide-on-scroll nav (Apple header behavior)
+   ------------------------------------------------------------ */
+#siteNav{
+	transition:transform .45s var(--ease-spring),
+		background .35s ease,border-color .35s ease,box-shadow .35s ease;
+}
+#siteNav.nav-hidden{transform:translateY(-100%)}
+
+/* ------------------------------------------------------------
+   6 · Reduced motion — everything collapses to static
+   ------------------------------------------------------------ */
+@media (prefers-reduced-motion:reduce){
+	.feature-grid > .fc:not(.fc-row),
+	.cert-grid > .cert,
+	.sol-grid > .sol,
+	.integ-grid > .integ,
+	.uc-tabs > .uc-tab{
+		transform:none;
+		transition:none;
+	}
+	.btn:not(.btn-nav){transform:none}
+	#siteNav{transform:none;transition:none}
+	.hero.hz .hero-copy,
+	.hero.hz .hero-media{
+		opacity:1!important;transform:none!important;filter:none!important;
+	}
+}
