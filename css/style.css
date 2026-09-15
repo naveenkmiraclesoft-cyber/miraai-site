@@ -179,13 +179,13 @@ html[data-theme="dark"] .nav-logo img.logo-white{display:inline-block}
 /* ============================================================
    Feature grid
    ============================================================ */
-.feature-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;width:100%}
+.feature-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;width:100%;grid-auto-rows:minmax(200px,1fr);align-items:stretch}
 .fc{background:var(--surface);border:.5px solid var(--border);border-radius:var(--r-card);box-shadow:var(--sh-card);padding:44px 30px 34px;display:flex;flex-direction:column;transition:transform .3s ease,box-shadow .3s ease,border-color .3s ease;position:relative;overflow:hidden}
 .fc:hover{transform:translateY(-4px);box-shadow:var(--sh-hover);border-color:var(--accent)}
 .fc-wide{grid-column:span 5;align-items:center;text-align:center;padding:52px 40px}
 .fc-2{grid-column:span 2}
 .fc-3{grid-column:span 3}
-.fc-row{grid-column:span 5;display:flex;gap:14px;padding:0;background:none;border:0;box-shadow:none;overflow:visible}
+.fc-row{grid-column:span 5;display:flex;gap:14px;padding:0;background:none;border:0;box-shadow:none;overflow:visible;align-items:stretch}
 .fc-row:hover{transform:none;border-color:transparent;box-shadow:none}
 .fc-row:hover .fc{background:var(--surface)}
 .fc-half{flex:1 1 0}
