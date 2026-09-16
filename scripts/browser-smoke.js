@@ -5,9 +5,24 @@ const os = require("os");
 const { spawn } = require("child_process");
 
 const root = path.resolve(__dirname, "..");
-const chromePath = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
 const port = 4173;
 const debugPort = 9222;
+
+function resolveChrome() {
+  if (process.env.CHROME_PATH && fs.existsSync(process.env.CHROME_PATH)) return process.env.CHROME_PATH;
+  const candidates = [
+    "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
+    "/usr/bin/google-chrome",
+    "/usr/bin/google-chrome-stable",
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+  ];
+  const found = candidates.find(candidate => fs.existsSync(candidate));
+  if (!found) throw new Error("Chrome not found. Set CHROME_PATH to a Chrome executable.");
+  return found;
+}
+
+const chromePath = resolveChrome();
 
 function serveFile(request, response) {
   const pathname = decodeURIComponent(new URL(request.url, `http://127.0.0.1:${port}`).pathname);
@@ -80,7 +95,6 @@ async function waitFor(client, expression) {
 }
 
 async function run() {
-  if (!fs.existsSync(chromePath)) throw new Error(`Chrome not found at ${chromePath}`);
   const server = http.createServer(serveFile);
   await new Promise(resolve => server.listen(port, "127.0.0.1", resolve));
   const profile = fs.mkdtempSync(path.join(os.tmpdir(), "miraai-chrome-"));

@@ -25,6 +25,46 @@ function validate() {
   console.log(`Validated ${common.languages.length} locales.`);
 }
 
+function validateSite() {
+  const errors = [];
+  const expectedRoutes = ["", ...common.languages.map(language => `${language.path}/`)];
+
+  const sitemapFile = path.join(root, "sitemap.xml");
+  if (!fs.existsSync(sitemapFile)) errors.push("sitemap.xml not found — run npm run build first");
+  else {
+    const sitemap = fs.readFileSync(sitemapFile, "utf8");
+    const locs = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(match => match[1]);
+    const expectedUrls = expectedRoutes.map(route => `${site}/${route}`);
+    expectedUrls.forEach(url => { if (!locs.includes(url)) errors.push(`sitemap missing ${url}`); });
+    if (locs.length !== expectedUrls.length) errors.push(`sitemap lists ${locs.length} URLs, expected ${expectedUrls.length}`);
+  }
+
+  const robotsFile = path.join(root, "robots.txt");
+  if (!fs.existsSync(robotsFile)) errors.push("robots.txt not found — run npm run build first");
+  else if (!fs.readFileSync(robotsFile, "utf8").includes(`${site}/sitemap.xml`)) errors.push("robots.txt missing sitemap reference");
+
+  const pages = [{ route: "en-US", page: path.join(root, "index.html"), canonical: `${site}/` }].concat(
+    common.languages.map(language => ({ route: language.code, page: path.join(root, language.path, "index.html"), canonical: `${site}/${language.path}/` }))
+  );
+
+  pages.forEach(({ route, page, canonical }) => {
+    if (!fs.existsSync(page)) return errors.push(`${canonical} page not found — run npm run build first`);
+    const html = fs.readFileSync(page, "utf8");
+    if (!html.includes(`<link rel="canonical" href="${canonical}">`)) errors.push(`${route}: canonical mismatch`);
+    common.languages.forEach(language => {
+      const link = `<link rel="alternate" hreflang="${language.code}" href="${site}/${language.path}/">`;
+      if (!html.includes(link)) errors.push(`${route}: missing hreflang ${language.code}`);
+    });
+    if (!html.includes(`<link rel="alternate" hreflang="x-default" href="${site}/en-us/">`)) errors.push(`${route}: missing x-default`);
+    const hasDraftBanner = html.includes("translation-note");
+    if (route === "en-US" && hasDraftBanner) errors.push("en-US must not carry a translation draft banner");
+    if (route !== "en-US" && !hasDraftBanner) errors.push(`${route}: non-English page must carry a translation draft banner`);
+  });
+
+  if (errors.length) throw new Error(errors.join("\n"));
+  console.log(`Validated built site: ${pages.length} pages, sitemap, robots.`);
+}
+
 function icon(name) {
   const paths = {
     arrow: '<path d="M5 12h14M13 6l6 6-6 6"/>',
@@ -80,8 +120,11 @@ function render(locale, route, rootPage = false) {
 	<link rel="alternate" hreflang="x-default" href="${site}/en-us/">
 	<meta property="og:type" content="website"><meta property="og:title" content="${escape(locale.metaTitle)}"><meta property="og:description" content="${escape(locale.metaDescription)}"><meta property="og:url" content="${canonical}">
 	<link rel="icon" href="https://d2b8lqy494c4mo.cloudfront.net/mss/images/favicon.ico">
+	<link rel="preload" href="${prefix}assets/fonts/montserrat-latin.woff2" as="font" type="font/woff2" crossorigin>
+	<link rel="stylesheet" href="${prefix}assets/fonts/montserrat.css">
 	<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Noto+Sans+JP:wght@500;600;700&family=Noto+Sans+SC:wght@500;600;700&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;600;700&family=Noto+Sans+SC:wght@500;600;700&display=swap" media="print" onload="this.media='all'">
+	<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;600;700&family=Noto+Sans+SC:wght@500;600;700&display=swap"><style>.gallery-track{display:block}</style></noscript>
 	<link rel="stylesheet" href="${prefix}assets/site.css">
 	<script>try{document.documentElement.dataset.theme=localStorage.getItem('mira-theme')||'light'}catch(e){document.documentElement.dataset.theme='light'}</script>
 	<script type="application/ld+json">${schema}</script>
@@ -125,6 +168,7 @@ function write(file, content) {
 
 validate();
 if (process.argv.includes("--validate")) process.exit(0);
+if (process.argv.includes("--validate-site")) { validateSite(); process.exit(0); }
 
 common.languages.forEach(language => write(path.join(root, language.path, "index.html"), render(locales[language.code], language.code)));
 write(path.join(root, "index.html"), render(locales["en-US"], "en-US", true));
