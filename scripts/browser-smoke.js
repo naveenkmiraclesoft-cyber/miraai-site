@@ -44,8 +44,8 @@ function serveFile(request, response) {
   });
 }
 
-async function waitForTarget() {
-  for (let attempt = 0; attempt < 50; attempt += 1) {
+async function waitForTarget(attempts = 120) {
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
     try {
       const targets = await fetch(`http://127.0.0.1:${debugPort}/json/list`).then(response => response.json());
       const page = targets.find(target => target.type === "page" && target.url.includes(`/en-us/`));
@@ -98,14 +98,21 @@ async function run() {
   const server = http.createServer(serveFile);
   await new Promise(resolve => server.listen(port, "127.0.0.1", resolve));
   const profile = fs.mkdtempSync(path.join(os.tmpdir(), "miraai-chrome-"));
+  const chromeLog = [];
   const chrome = spawn(chromePath, [
-    "--headless=new", "--disable-gpu", "--no-first-run", "--no-default-browser-check",
+    "--headless=new", "--disable-gpu", "--no-sandbox", "--no-first-run", "--no-default-browser-check",
     `--remote-debugging-port=${debugPort}`, `--user-data-dir=${profile}`,
     `http://127.0.0.1:${port}/en-us/`
-  ], { stdio: "ignore" });
+  ], { stdio: ["ignore", "ignore", "pipe"] });
+  chrome.stderr.on("data", chunk => chromeLog.push(String(chunk)));
 
   try {
-    const target = await waitForTarget();
+    let target;
+    try {
+      target = await waitForTarget();
+    } catch (error) {
+      throw new Error(`${error.message}\nChrome stderr:\n${chromeLog.join("").slice(0, 2000)}`);
+    }
     const client = createClient(target.webSocketDebuggerUrl);
     await client.ready;
     await client.send("Runtime.enable");
