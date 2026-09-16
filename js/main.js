@@ -154,13 +154,11 @@
 		var words = ["Automate.", "Innovate.", "Accelerate."];
 		if (reduced) {
 			el.textContent = words[words.length - 1];
-			el.setAttribute("aria-label", words[words.length - 1]);
 			return;
 		}
 		var word = 0;
 		var char = 0;
 		var deleting = false;
-		var label = word;
 		function tick() {
 			var full = words[word];
 			if (deleting) {
@@ -169,8 +167,6 @@
 				if (char === 0) {
 					deleting = false;
 					word = (word + 1) % words.length;
-					el.setAttribute("aria-label", words[word]);
-					label = word;
 					setTimeout(tick, 550);
 					return;
 				}
@@ -271,6 +267,11 @@
 	function initFaq() {
 		var items = document.querySelectorAll(".faq-q");
 		items.forEach(function (btn) {
+			var initialItem = btn.closest(".faq-item");
+			var initialAnswer = initialItem.querySelector(".faq-a");
+			if (initialItem.classList.contains("is-open")) {
+				initialAnswer.style.setProperty("--faq-open-height", initialAnswer.scrollHeight + "px");
+			}
 			btn.addEventListener("click", function () {
 				var item = btn.closest(".faq-item");
 				var ans = item.querySelector(".faq-a");
@@ -281,17 +282,17 @@
 					if (other !== btn) {
 						other.setAttribute("aria-expanded", "false");
 						oItem.classList.remove("is-open");
-						oAns.style.maxHeight = "0px";
+						oAns.style.removeProperty("--faq-open-height");
 					}
 				});
 				if (open) {
 					btn.setAttribute("aria-expanded", "false");
 					item.classList.remove("is-open");
-					ans.style.maxHeight = "0px";
+					ans.style.removeProperty("--faq-open-height");
 				} else {
 					btn.setAttribute("aria-expanded", "true");
 					item.classList.add("is-open");
-					ans.style.maxHeight = ans.scrollHeight + "px";
+					ans.style.setProperty("--faq-open-height", ans.scrollHeight + "px");
 				}
 			});
 		});

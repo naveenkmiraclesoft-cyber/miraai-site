@@ -105,4 +105,42 @@
 	.hero.hz .hero-media{
 		opacity:1!important;transform:none!important;filter:none!important;
 	}
+	/* Scroll/parallax effects collapse to static */
+	.section > .container{transform:none!important;opacity:1!important}
+	.hero-dots{transform:none!important}
+	.section-head h2{transform:none!important}
+}
+
+/* ============================================================
+   7 · Scroll-linked content motion
+   Movement stays on section contents so full-width bands remain
+   stable and never expose gaps while scrolling.
+   ============================================================ */
+.section > .container{
+	opacity:var(--section-o,1);
+	transform:translate3d(0,var(--section-y,0),0) scale(var(--section-s,1));
+	transform-origin:50% 50%;
+	will-change:transform,opacity;
+}
+.section-head h2{
+	opacity:var(--heading-o,1);
+	transform:translate3d(0,var(--heading-y,0),0) scale(var(--heading-s,1));
+	transform-origin:50% 50%;
+	will-change:transform,opacity;
+}
+
+/* ============================================================
+   8 · Hero background parallax
+   ============================================================ */
+.hero-dots{
+	transform:translate3d(0,var(--dots-y,0),0);
+	will-change:transform;
+}
+
+@media (max-width:700px){
+	.section > .container,.section-head h2,.hero-dots{
+		opacity:1;
+		transform:none;
+		will-change:auto;
+	}
 }

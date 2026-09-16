@@ -201,8 +201,8 @@ html[data-theme="dark"] .nav-logo img.logo-white{display:inline-block}
 /* ============================================================
    Integrations
    ============================================================ */
-.integ-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin-bottom:34px}
-.integ{display:inline-flex;align-items:center;gap:.65rem;padding:14px 24px;border:.5px solid var(--border);border-radius:100px;background:var(--surface);font-weight:700;font-size:15px;color:var(--text);box-shadow:var(--sh-card);transition:transform .25s ease,border-color .25s ease,box-shadow .25s ease}
+.integ-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin-bottom:34px;align-items:stretch}
+.integ{display:inline-flex;align-items:center;justify-content:center;gap:.65rem;min-height:50px;padding:12px 22px;border:.5px solid var(--border);border-radius:100px;background:var(--surface);font-weight:700;font-size:15px;line-height:1.2;color:var(--text);box-shadow:var(--sh-card);transition:transform .25s ease,border-color .25s ease,box-shadow .25s ease}
 .integ i{color:var(--link);font-size:18px}
 .integ:hover{transform:translateY(-3px);border-color:var(--accent);box-shadow:var(--sh-hover)}
 .integ-more{text-align:center}
@@ -215,15 +215,13 @@ html[data-theme="dark"] .nav-logo img.logo-white{display:inline-block}
 /* ============================================================
    Certifications 001-004
    ============================================================ */
-.cert-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
-.cert{background:var(--invert-surface);border:1px solid var(--invert-border);border-radius:var(--r-card);padding:40px 28px;display:flex;flex-direction:column;align-items:center;text-align:center;transition:transform .3s ease,border-color .3s ease,background .3s ease}
+.cert-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;grid-auto-rows:minmax(200px,1fr);align-items:stretch}
+.cert{background:var(--invert-surface);border:1px solid var(--invert-border);border-radius:var(--r-card);padding:44px 28px;display:flex;flex-direction:column;align-items:center;text-align:center;transition:transform .3s ease,border-color .3s ease,background .3s ease}
 .cert:hover{transform:translateY(-4px);border-color:rgba(0,170,231,.6);background:var(--invert-surface-2)}
-.cert-mask{width:78px;height:84px;display:flex;align-items:center;justify-content:center;font-size:30px;color:rgba(255,255,255,.92);border-radius:12px;margin-bottom:22px;
-	mask:linear-gradient(0deg,transparent 0%,#000 18%);-webkit-mask:linear-gradient(0deg,transparent 0%,#000 18%);
-	background:radial-gradient(circle at 50% 42%,rgba(0,170,231,.5),rgba(35,104,160,.15) 70%,transparent)}
+.cert-mask{width:92px;height:92px;display:flex;align-items:center;justify-content:center;font-size:30px;color:rgba(255,255,255,.92);border-radius:50%;margin-bottom:22px;background:radial-gradient(circle at 50% 42%,rgba(0,170,231,.5),rgba(35,104,160,.15) 70%,transparent)}
 .cert-num{font-weight:900;font-size:15px;letter-spacing:.18em;color:var(--accent);margin-bottom:10px}
 .cert-tag{font-weight:700;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--invert-eyebrow);margin-bottom:10px}
-.cert h3{font-size:19px;color:var(--invert-text);margin-bottom:10px}
+.cert h3{min-height:2.12em;display:flex;align-items:flex-start;justify-content:center;font-size:19px;color:var(--invert-text);margin-bottom:10px}
 .cert p:last-child{font-size:13.5px;line-height:1.6;color:var(--invert-soft)}
 @media (max-width:1024px){.cert-grid{grid-template-columns:repeat(2,1fr)}}
 @media (max-width:700px){.cert-grid{grid-template-columns:1fr}}
@@ -231,11 +229,11 @@ html[data-theme="dark"] .nav-logo img.logo-white{display:inline-block}
 /* ============================================================
    Use case tabs
    ============================================================ */
-.uc-tabs{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-bottom:44px}
-.uc-tab{padding:12px 22px;border:.5px solid var(--border);background:var(--surface);border-radius:100px;font-weight:700;font-size:14px;color:var(--text-soft);box-shadow:var(--sh-card);transition:all .25s ease}
+.uc-tabs{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-bottom:44px;align-items:stretch}
+.uc-tab{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:10px 22px;border:.5px solid var(--border);background:var(--surface);border-radius:100px;font-weight:700;font-size:14px;line-height:1.2;color:var(--text-soft);box-shadow:var(--sh-card);transition:color .25s ease,background-color .25s ease,border-color .25s ease,box-shadow .25s ease,transform .25s ease}
 .uc-tab:hover{color:var(--accent);border-color:var(--accent);transform:translateY(-2px)}
 .uc-tab.is-active{background:var(--navy-800);color:#fff;border-color:var(--navy-800)}
-.uc-body{display:flex;gap:44px;align-items:center;background:var(--surface-2);border-radius:var(--r-panel);padding:46px;border:.5px solid var(--border);animation:panelIn .45s ease}
+.uc-body{display:flex;gap:44px;align-items:stretch;background:var(--surface-2);border-radius:var(--r-panel);padding:46px;border:.5px solid var(--border);animation:panelIn .45s ease}
 .uc-body[hidden]{display:none}
 @keyframes panelIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 .uc-art{flex:0 0 300px;height:260px;border-radius:var(--r-panel);display:flex;align-items:center;justify-content:center;font-size:64px;color:#fff;box-shadow:var(--sh-card)}
@@ -249,7 +247,7 @@ html[data-theme="dark"] .nav-logo img.logo-white{display:inline-block}
 .uc-title{font-size:clamp(20px,2.6vw,28px);font-weight:700;color:var(--text-strong);line-height:1.2;margin-bottom:14px}
 .uc-desc{font-size:15.5px;color:var(--text-soft);line-height:1.7;margin-bottom:18px}
 .uc-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
-.uc-chips li{font-size:12px;font-weight:700;letter-spacing:.06em;color:var(--link);background:var(--surface);border:.5px solid var(--border);border-radius:100px;padding:7px 14px}
+.uc-chips li{display:inline-flex;align-items:center;justify-content:center;min-height:34px;font-size:12px;font-weight:700;line-height:1.2;letter-spacing:.04em;color:var(--link);background:var(--surface);border:.5px solid var(--border);border-radius:100px;padding:7px 14px;text-align:center}
 .uc-benefits{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-bottom:20px}
 .uc-benefits li{position:relative;padding-left:24px;font-size:14px;font-weight:600;color:var(--text)}
 .uc-benefits li::before{content:"\f00c";font-family:"Font Awesome 6 Free";font-weight:900;position:absolute;left:0;color:var(--accent);font-size:12px}
@@ -258,15 +256,15 @@ html[data-theme="dark"] .nav-logo img.logo-white{display:inline-block}
 /* ============================================================
    Solutions cards
    ============================================================ */
-.sol-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
-.sol{background:var(--surface);border:.5px solid var(--border);border-radius:var(--r-card);padding:36px 30px;display:flex;flex-direction:column;gap:0;box-shadow:var(--sh-card);transition:transform .32s var(--ease-spring),box-shadow .32s ease,border-color .32s ease;position:relative;overflow:hidden}
+.sol-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;grid-auto-rows:minmax(200px,1fr);align-items:stretch}
+.sol{background:var(--surface);border:.5px solid var(--border);border-radius:var(--r-card);padding:44px 30px 34px;display:flex;flex-direction:column;gap:0;box-shadow:var(--sh-card);transition:transform .32s var(--ease-spring),box-shadow .32s ease,border-color .32s ease;position:relative;overflow:hidden}
 .sol::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--grad);transform:scaleX(0);transform-origin:left;transition:transform .35s ease}
 .sol:hover{transform:translateY(-5px);box-shadow:var(--sh-hover);border-color:var(--accent)}
 .sol:hover::after{transform:scaleX(1)}
-.sol-art{width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;color:var(--accent);background:radial-gradient(circle at 50% 35%,rgba(0,170,231,.22),rgba(35,104,160,.06) 70%,transparent);margin-bottom:22px;transition:transform .35s ease}
+.sol-art{width:92px;height:92px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;color:var(--accent);background:radial-gradient(circle at 50% 35%,rgba(0,170,231,.22),rgba(35,104,160,.06) 70%,transparent);margin-bottom:22px;transition:transform .35s ease}
 .sol:hover .sol-art{transform:scale(1.12) translateY(-2px)}
-.sol h3{font-size:20px;color:var(--text-strong);margin-bottom:10px}
-.sol p{font-size:14.5px;color:var(--text-soft)}
+.sol h3{min-height:2.12em;font-size:20px;color:var(--text-strong);margin-bottom:10px}
+.sol p{font-size:14.5px;color:var(--text-soft);margin-top:auto}
 @media (max-width:1024px){.sol-grid{grid-template-columns:repeat(2,1fr)}}
 @media (max-width:700px){.sol-grid{grid-template-columns:1fr}}
 
@@ -280,6 +278,7 @@ html[data-theme="dark"] .nav-logo img.logo-white{display:inline-block}
 .faq-q i{color:var(--accent);font-size:13px;transition:transform .3s ease}
 .faq-q[aria-expanded="true"] i{transform:rotate(180deg)}
 .faq-a{max-height:0;overflow:hidden;transition:max-height .45s ease}
+.faq-item.is-open .faq-a{max-height:var(--faq-open-height,400px)}
 .faq-a p{padding:0 28px 26px;font-size:15px;line-height:1.7;color:var(--text-soft)}
 
 /* ============================================================
@@ -333,7 +332,15 @@ html[data-theme="dark"] .nav-logo img.logo-white{display:inline-block}
 	.hero-ctas .btn{width:100%}
 	.footer-top{grid-template-columns:1fr 1fr}
 	.t-card{width:300px}
+	.fc,.fc-wide,.cert,.sol{padding:32px 24px}
+	.fc-visual,.cert-mask,.sol-art{width:76px;height:76px;font-size:26px}
+	.fc-wide .fc-visual{width:92px;height:92px;font-size:34px}
+	.uc-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:30px}
+	.uc-tab{width:100%;padding:10px 12px;font-size:12px}
+	.uc-chips{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+	.uc-chips li{width:100%}
 }
+@media (max-width:420px){.uc-tabs,.uc-chips{grid-template-columns:1fr}}
 
 /* ============================================================
    Reduced motion

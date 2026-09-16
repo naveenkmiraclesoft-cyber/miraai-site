@@ -10,6 +10,7 @@
 		if (reduced) return;
 		initHeroZoom();
 		initNavHide();
+		initScrollMotion();
 		if (finePointer) {
 			initTilt();
 			initMagnetic();
@@ -86,7 +87,7 @@
 			return;
 		}
 
-		var STEP = 70;
+		var STEP = 150;
 		var timer;
 
 		all.forEach(function (kids) {
@@ -208,5 +209,48 @@
 				requestAnimationFrame(update);
 			}
 		}, { passive: true });
+	}
+
+	/* ------------------------------------------------------------
+	   6 · Scroll-linked content motion and hero parallax.
+	   One rAF loop updates bounded custom properties for all effects.
+	   ------------------------------------------------------------ */
+	function initScrollMotion() {
+		var sections = document.querySelectorAll(".section");
+		var heads = document.querySelectorAll(".section-head");
+		var dots = document.querySelector(".hero-dots");
+		var ticking = false;
+
+		function update() {
+			ticking = false;
+			var vh = window.innerHeight;
+			sections.forEach(function (section) {
+				var rect = section.getBoundingClientRect();
+				var distance = Math.abs(rect.top + rect.height / 2 - vh / 2);
+				var visibility = 1 - Math.min(1, distance / (vh * 0.95 + rect.height / 2));
+				var ease = visibility * visibility * (3 - 2 * visibility);
+				section.style.setProperty("--section-o", (0.9 + ease * 0.1).toFixed(3));
+				section.style.setProperty("--section-y", ((1 - ease) * 18).toFixed(1) + "px");
+				section.style.setProperty("--section-s", (0.992 + ease * 0.008).toFixed(4));
+			});
+			heads.forEach(function (head) {
+				var rect = head.getBoundingClientRect();
+				var progress = 1 - Math.max(0, Math.min(1, (rect.top - vh * 0.2) / (vh * 0.65)));
+				head.style.setProperty("--heading-o", (0.88 + progress * 0.12).toFixed(3));
+				head.style.setProperty("--heading-y", ((1 - progress) * 12).toFixed(1) + "px");
+				head.style.setProperty("--heading-s", (0.985 + progress * 0.015).toFixed(4));
+			});
+			if (dots) dots.style.setProperty("--dots-y", Math.min(32, window.scrollY * 0.06).toFixed(1) + "px");
+		}
+
+		function requestUpdate() {
+			if (ticking) return;
+			ticking = true;
+			requestAnimationFrame(update);
+		}
+
+		window.addEventListener("scroll", requestUpdate, { passive: true });
+		window.addEventListener("resize", requestUpdate, { passive: true });
+		update();
 	}
 })();
