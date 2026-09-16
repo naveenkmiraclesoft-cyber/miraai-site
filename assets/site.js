@@ -119,6 +119,16 @@
         var item = button.closest(".faq-item");
         var answer = document.getElementById(button.getAttribute("aria-controls"));
         var open = button.getAttribute("aria-expanded") === "true";
+        document.querySelectorAll(".faq-item.is-open").forEach(function (openItem) {
+          if (openItem !== item) {
+            var openBtn = openItem.querySelector("button");
+            var openAns = document.getElementById(openBtn.getAttribute("aria-controls"));
+            openBtn.setAttribute("aria-expanded", "false");
+            openItem.classList.remove("is-open");
+            openAns.setAttribute("aria-hidden", "true");
+            openAns.setAttribute("inert", "");
+          }
+        });
         button.setAttribute("aria-expanded", String(!open));
         item.classList.toggle("is-open", !open);
         answer.setAttribute("aria-hidden", String(open));
@@ -153,8 +163,8 @@
   }
 
   function initHeroEntrance() {
-    if (reduced) return;
     var items = document.querySelectorAll(".hero [data-entrance]");
+    if (reduced) { items.forEach(function (item) { item.classList.add("is-entrance"); }); return; }
     items.forEach(function (item, index) {
       setTimeout(function () { item.classList.add("is-entrance"); }, index * 80);
     });
