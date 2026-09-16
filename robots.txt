@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://naveenkmiraclesoft-cyber.github.io/miraai-site/sitemap.xml

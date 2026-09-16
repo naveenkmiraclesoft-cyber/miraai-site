@@ -5,6 +5,7 @@ Desktop.ini
 .vscode/
 .idea/
 *.log
+node_modules/
 
 # Local development server (temp)
 server.js

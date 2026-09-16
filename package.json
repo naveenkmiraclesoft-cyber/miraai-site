@@ -1,0 +1,11 @@
+{
+  "name": "miraai-product-page",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "build": "node scripts/build.js",
+    "validate:locales": "node scripts/build.js --validate",
+    "check": "node --check assets/site.js && node --check scripts/build.js && node --check src/content.js && npm run validate:locales",
+    "test:browser": "node scripts/browser-smoke.js"
+  }
+}
