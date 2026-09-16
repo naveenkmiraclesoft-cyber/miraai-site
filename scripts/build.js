@@ -59,6 +59,7 @@ function validateSite() {
     const hasDraftBanner = html.includes("translation-note");
     if (route === "en-US" && hasDraftBanner) errors.push("en-US must not carry a translation draft banner");
     if (route !== "en-US" && !hasDraftBanner) errors.push(`${route}: non-English page must carry a translation draft banner`);
+    if (!html.includes("TODO — content to be filled later:")) errors.push(`${route}: missing pending-content comment`);
   });
 
   if (errors.length) throw new Error(errors.join("\n"));
@@ -105,12 +106,14 @@ function render(locale, route, rootPage = false) {
   const resources = locale.resources.cards.map((item, index) => `<a class="resource-card reveal" href="${common.briefingUrl}"><span>${icon(index === 2 ? "shield" : index === 1 ? "grid" : "layers")}</span><h3>${escape(item[0])}</h3><p>${escape(item[1])}</p><strong>${escape(locale.resources.action)} ${icon("arrow")}</strong></a>`).join("");
   const faq = locale.faq.items.map((item, index) => `<article class="faq-item${index === 0 ? " is-open" : ""}"><h3><button type="button" aria-expanded="${index === 0}" aria-controls="answer-${index + 1}">${escape(item[0])}${icon("chevron")}</button></h3><div class="faq-answer" id="answer-${index + 1}"${index ? ' aria-hidden="true" inert' : ""}><p>${escape(item[1])}</p></div></article>`).join("");
   const draft = locale.draft ? `<div class="translation-note" role="note">${escape(locale.draft)}</div>` : "";
+  const pendingNote = "TODO — content to be filled later:\n" + common.pending.map(item => "- " + item).join("\n");
   const schema = JSON.stringify({ "@context": "https://schema.org", "@type": "SoftwareApplication", name: "miraAI", applicationCategory: "BusinessApplication", description: locale.metaDescription, url: canonical, publisher: { "@type": "Organization", name: "Miracle Software Systems, Inc.", url: "https://www.miraclesoft.com/" } }).replace(/</g, "\\u003c");
 
   return `<!DOCTYPE html>
 <html lang="${route}">
 <head>
 	<meta charset="utf-8">
+<!-- ${pendingNote} -->
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>${escape(locale.metaTitle)}</title>
 	<meta name="description" content="${escape(locale.metaDescription)}">

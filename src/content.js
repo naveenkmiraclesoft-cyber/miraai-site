@@ -7,7 +7,12 @@ const common = {
     { code: "zh-Hans", path: "zh-hans", label: "简体中文" }
   ],
   productUrl: "https://www.miraclesoft.com/products/miraai",
-  briefingUrl: "https://www.miraclesoft.com/contact"
+  briefingUrl: "https://www.miraclesoft.com/contact",
+  pending: [
+    "Approved product evidence: customer outcomes, metrics, case-study numbers, compliance certifications, and SLA figures.",
+    "Executive-briefing scheduling URL: currently https://www.miraclesoft.com/contact pending an approved scheduling link.",
+    "Native-language review of fr / de / ja / zh-Hans translations and final English copy sign-off by an authorized stakeholder."
+  ]
 };
 
 const locales = {
