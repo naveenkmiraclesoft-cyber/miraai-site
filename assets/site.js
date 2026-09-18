@@ -179,6 +179,153 @@
     steps.forEach(function (step) { observer.observe(step); });
   }
 
+  function setToggle(toggle, paused) {
+    toggle.setAttribute("aria-pressed", String(!paused));
+    toggle.setAttribute("aria-label", paused ? toggle.dataset.labelPlay : toggle.dataset.labelPause);
+    var label = toggle.querySelector("[data-autoplay-label]");
+    if (label) label.textContent = paused ? toggle.dataset.labelPlay : toggle.dataset.labelPause;
+  }
+
+  function initHeroSim(zone) {
+    var steps = zone.querySelectorAll("[data-sim-step]");
+    var trace = zone.querySelector("[data-sim-trace]");
+    var result = zone.querySelector("[data-sim-result]");
+    var toggle = zone.querySelector("[data-autoplay]");
+    if (!steps.length || !toggle) return;
+    var duration = 8000;
+    var running = false;
+    var paused = false;
+    var raf = 0;
+    var last = 0;
+    var elapsed = 0;
+
+    function paint() {
+      var t = (elapsed % duration) / duration;
+      steps.forEach(function (step, index) { step.classList.toggle("is-active", t >= 0.22 + index * 0.14); });
+      if (trace) zone.style.setProperty("--sim-progress", String(Math.max(0, Math.min(1, (t - 0.16) / 0.58))));
+      result.classList.toggle("is-visible", t > 0.72);
+    }
+    function frame() {
+      if (!running) return;
+      var now = Date.now();
+      elapsed += now - last;
+      last = now;
+      paint();
+      raf = requestAnimationFrame(frame);
+    }
+    function start() {
+      if (reduced || paused || running) return;
+      running = true;
+      last = Date.now();
+      frame();
+    }
+    function stop() {
+      running = false;
+      if (raf) cancelAnimationFrame(raf);
+      raf = 0;
+    }
+    toggle.addEventListener("click", function () {
+      paused = !paused;
+      setToggle(toggle, paused);
+      if (paused) stop(); else start();
+    });
+    if (reduced) {
+      zone.classList.add("is-static");
+      steps.forEach(function (step) { step.classList.add("is-active"); });
+      if (trace) zone.style.setProperty("--sim-progress", "1");
+      result.classList.add("is-visible");
+      return;
+    }
+    zone.addEventListener("mouseenter", stop);
+    zone.addEventListener("mouseleave", start);
+    zone.addEventListener("focusin", stop);
+    zone.addEventListener("focusout", function () { if (!paused) start(); });
+    start();
+  }
+
+  function initTheater(zone) {
+    var track = zone.querySelector(".theater-track");
+    var slides = Array.prototype.slice.call(zone.querySelectorAll(".theater-slide"));
+    var dots = zone.querySelectorAll("[data-theater-dot]");
+    var status = zone.querySelector("[data-status-template]");
+    var progress = zone.querySelector("[data-theater-progress]");
+    var toggle = zone.querySelector("[data-autoplay]");
+    if (!track || !slides.length || !toggle) return;
+    var index = 0;
+    var timer = null;
+    var paused = false;
+    var interval = 9000;
+
+    function show(next) {
+      index = (next + slides.length) % slides.length;
+      track.style.transform = "translate3d(" + (-index * 100) + "%,0,0)";
+      slides.forEach(function (slide, i) { slide.toggleAttribute("inert", i !== index); });
+      dots.forEach(function (dot, i) {
+        if (i === index) dot.setAttribute("aria-current", "true"); else dot.removeAttribute("aria-current");
+      });
+      if (status) status.textContent = status.dataset.statusTemplate.replace("{current}", index + 1).replace("{total}", slides.length);
+      resetProgress();
+    }
+    function resetProgress() {
+      if (!progress || reduced) return;
+      progress.classList.remove("is-animating");
+      progress.style.width = "0";
+      void progress.offsetWidth;
+      progress.classList.add("is-animating");
+      progress.style.width = "100%";
+    }
+    function start() {
+      if (reduced || paused || timer) return;
+      timer = setInterval(function () { show(index + 1); }, interval);
+      resetProgress();
+    }
+    function stop() {
+      if (timer) { clearInterval(timer); timer = null; }
+      if (progress) { progress.classList.remove("is-animating"); progress.style.width = "0"; }
+    }
+    function prev() { show(index - 1); start(); }
+    function next() { show(index + 1); start(); }
+    zone.querySelector("[data-theater-prev]").addEventListener("click", prev);
+    zone.querySelector("[data-theater-next]").addEventListener("click", next);
+    dots.forEach(function (dot) {
+      dot.addEventListener("click", function () { show(Number(dot.dataset.theaterDot)); start(); });
+    });
+    toggle.addEventListener("click", function () {
+      paused = !paused;
+      setToggle(toggle, paused);
+      if (paused) stop(); else start();
+    });
+    if (reduced) {
+      zone.classList.add("is-static");
+      show(0);
+      return;
+    }
+    zone.addEventListener("mouseenter", stop);
+    zone.addEventListener("mouseleave", start);
+    zone.addEventListener("focusin", stop);
+    zone.addEventListener("focusout", function () { if (!paused) start(); });
+    show(0);
+    start();
+  }
+
+  function initAutonomous() {
+    document.querySelectorAll("[data-autonomous]").forEach(function (zone) {
+      if (zone.dataset.autonomous === "hero") initHeroSim(zone);
+      if (zone.dataset.autonomous === "theater") initTheater(zone);
+    });
+    if (!reduced) document.addEventListener("visibilitychange", function () {
+      document.querySelectorAll("[data-autonomous]").forEach(function (zone) {
+        var toggle = zone.querySelector("[data-autoplay]");
+        var paused = toggle && toggle.getAttribute("aria-pressed") === "false";
+        if (document.hidden) {
+          zone.dispatchEvent(new Event("mouseenter"));
+        } else if (!paused) {
+          zone.dispatchEvent(new Event("mouseleave"));
+        }
+      });
+    });
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
     initTheme();
     initMenus();
@@ -190,5 +337,6 @@
     initScrollProgress();
     initHeroEntrance();
     initDeliveryProgress();
+    initAutonomous();
   });
 })();

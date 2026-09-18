@@ -17,6 +17,9 @@ Not a defect: the live page ships fully functional with qualified, non-fabricate
 4. **English copy sign-off**
    English copy awaits final approval by an authorized C-suite stakeholder.
 
+5. **Autonomous-demo copy**
+   The hero pipeline simulation, theater scenarios, and controls in all five locales (`demo` block in `src/content.js`) are drafted but not yet reviewed by owners for accuracy (e.g., claim wording, scenario realism). Translations likewise await the native reviewers in item 3. The demos are data-decoration, not fabricated evidence — no metrics are claimed.
+
 ## Where this lives
 
 - Every built page (all 6 routes) contains an HTML `<head>` comment listing the pending items, generated from `common.pending` in `src/content.js`.

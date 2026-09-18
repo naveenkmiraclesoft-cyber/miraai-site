@@ -4,7 +4,7 @@ const { common, locales } = require("../src/content");
 
 const root = path.resolve(__dirname, "..");
 const site = "https://naveenkmiraclesoft-cyber.github.io/miraai-site";
-const required = ["metaTitle", "metaDescription", "skip", "language", "nav", "briefing", "hero", "value", "platform", "assurance", "useCases", "integrations", "deployment", "resources", "faq", "cta", "footer"];
+const required = ["metaTitle", "metaDescription", "skip", "language", "nav", "briefing", "hero", "value", "platform", "assurance", "useCases", "demo", "integrations", "deployment", "resources", "faq", "cta", "footer"];
 
 function escape(value) {
   return String(value).replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
@@ -18,8 +18,11 @@ function validate() {
     required.forEach(key => {
       if (locale[key] === undefined || locale[key] === null || locale[key] === "") errors.push(`${language.code}: missing ${key}`);
     });
-    if (locale.nav.length !== 6) errors.push(`${language.code}: nav must contain 6 labels`);
+    if (locale.nav.length !== 7) errors.push(`${language.code}: nav must contain 7 labels`);
     if (locale.useCases.slides.length < 4) errors.push(`${language.code}: at least 4 use cases required`);
+    if (locale.demo.theater.length < 3) errors.push(`${language.code}: at least 3 theater scenarios required`);
+    if (!locale.demo.controls.play || !locale.demo.controls.pause || !locale.demo.controls.live) errors.push(`${language.code}: demo controls (play/pause/live) required`);
+    if (!locale.demo.hero.question || !locale.demo.hero.result) errors.push(`${language.code}: demo hero question/result required`);
   });
   if (errors.length) throw new Error(errors.join("\n"));
   console.log(`Validated ${common.languages.length} locales.`);
@@ -60,13 +63,15 @@ function validateSite() {
     if (route === "en-US" && hasDraftBanner) errors.push("en-US must not carry a translation draft banner");
     if (route !== "en-US" && !hasDraftBanner) errors.push(`${route}: non-English page must carry a translation draft banner`);
     if (!html.includes("TODO — content to be filled later:")) errors.push(`${route}: missing pending-content comment`);
+    if (!html.includes('data-autonomous="hero"')) errors.push(`${route}: missing hero simulation`);
+    if (!html.includes('data-autonomous="theater"')) errors.push(`${route}: missing theater demo`);
   });
 
   if (errors.length) throw new Error(errors.join("\n"));
   console.log(`Validated built site: ${pages.length} pages, sitemap, robots.`);
 }
 
-function icon(name) {
+function icon(name, extra) {
   const paths = {
     arrow: '<path d="M5 12h14M13 6l6 6-6 6"/>',
     globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/>',
@@ -76,9 +81,11 @@ function icon(name) {
     check: '<path d="m5 12 4 4L19 6"/>',
     layers: '<path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5M3 16l9 5 9-5"/>',
     shield: '<path d="M12 3 5 6v5c0 4.4 2.8 8 7 10 4.2-2 7-5.6 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4"/>',
-    grid: '<rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/>'
+    grid: '<rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/>',
+    play: '<path d="M8 5v14l11-7Z"/>',
+    pause: '<rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/>'
   };
-  return `<svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${paths[name]}</svg>`;
+  return `<svg class="icon ${extra || ""}" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${paths[name]}</svg>`;
 }
 
 function card(title, text, index) {
@@ -91,7 +98,7 @@ function render(locale, route, rootPage = false) {
   const current = common.languages.find(item => item.code === route) || common.languages[0];
   const canonical = rootPage ? `${site}/` : `${site}/${current.path}/`;
   const hrefFor = language => rootPage ? `${language.path}/` : `../${language.path}/`;
-  const navIds = ["overview", "value", "platform", "security", "use-cases", "resources"];
+  const navIds = ["overview", "value", "platform", "security", "demo", "use-cases", "resources"];
   const langLinks = common.languages.map(language => `<a lang="${language.code}" href="${hrefFor(language)}"${language.code === route ? ' aria-current="page"' : ""}>${language.label}</a>`).join("");
   const alternate = common.languages.map(language => `<link rel="alternate" hreflang="${language.code}" href="${site}/${language.path}/">`).join("\n\t");
   const nav = locale.nav.map((label, index) => `<a href="#${navIds[index]}">${escape(label)}</a>`).join("");
@@ -103,6 +110,8 @@ function render(locale, route, rootPage = false) {
   const dots = locale.useCases.slides.map((slide, index) => `<button type="button" data-gallery-dot="${index}" aria-label="${escape(slide[1])}"${index === 0 ? ' aria-current="true"' : ""}></button>`).join("");
   const integrations = locale.integrations.groups.map(item => `<article class="integration-card reveal"><p>${escape(item[0])}</p><h3>${escape(item[1])}</h3></article>`).join("");
   const deployment = locale.deployment.steps.map((item, index) => `<li class="delivery-step reveal"><span>0${index + 1}</span><div><h3>${escape(item[0])}</h3><p>${escape(item[1])}</p></div></li>`).join("");
+  const theaterSlides = locale.demo.theater.map((item, index) => `<article class="theater-slide" id="theater-${index + 1}" role="group" aria-roledescription="slide" aria-label="${index + 1} / ${locale.demo.theater.length}"${index ? " inert" : ""}><div class="theater-art" aria-hidden="true"><div class="theater-flow"><div class="theater-node theater-node-q"><span>${icon("globe")}</span></div><div class="theater-conn"><i></i></div><div class="theater-node theater-node-c"><span>${icon("layers")}</span></div><div class="theater-conn"><i></i></div><div class="theater-node theater-node-r"><span>${icon("check")}</span></div></div><p class="theater-caption">${escape(locale.hero.visualTitle)}</p></div><div class="theater-copy"><p class="case-sector">${escape(item[0])}</p><h3>${escape(item[1])}</h3><p class="theater-question">${escape(item[2])}</p><ul class="chips">${item[3].map(chip => `<li>${escape(chip)}</li>`).join("")}</ul><p class="theater-result">${escape(item[4])}</p></div></article>`).join("");
+  const theaterDots = locale.demo.theater.map((t, i) => `<button type="button" data-theater-dot="${i}" aria-label="${escape(t[1])}"${i === 0 ? ' aria-current="true"' : ""}></button>`).join("");
   const resources = locale.resources.cards.map((item, index) => `<a class="resource-card reveal" href="${common.briefingUrl}"><span>${icon(index === 2 ? "shield" : index === 1 ? "grid" : "layers")}</span><h3>${escape(item[0])}</h3><p>${escape(item[1])}</p><strong>${escape(locale.resources.action)} ${icon("arrow")}</strong></a>`).join("");
   const faq = locale.faq.items.map((item, index) => `<article class="faq-item${index === 0 ? " is-open" : ""}"><h3><button type="button" aria-expanded="${index === 0}" aria-controls="answer-${index + 1}">${escape(item[0])}${icon("chevron")}</button></h3><div class="faq-answer" id="answer-${index + 1}"${index ? ' aria-hidden="true" inert' : ""}><p>${escape(item[1])}</p></div></article>`).join("");
   const draft = locale.draft ? `<div class="translation-note" role="note">${escape(locale.draft)}</div>` : "";
@@ -147,11 +156,12 @@ function render(locale, route, rootPage = false) {
 	<main id="main">
 		<section class="hero" id="overview"><div class="hero-aurora" aria-hidden="true"></div><div class="shell hero-grid">
 			<div class="hero-copy"><p class="eyebrow" data-entrance>${escape(locale.hero.eyebrow)}</p><h1 data-entrance>${escape(locale.hero.title)}</h1><p class="hero-text" data-entrance>${escape(locale.hero.text)}</p><div class="hero-actions" data-entrance><a class="button" href="${common.briefingUrl}">${escape(locale.briefing)} ${icon("arrow")}</a><a class="button button-secondary" href="#platform">${escape(locale.hero.secondary)}</a></div><ul class="hero-points" data-entrance>${locale.hero.points.map(point => `<li>${icon("check")}${escape(point)}</li>`).join("")}</ul></div>
-			<div class="hero-product" data-entrance><div class="product-bar"><span></span><span></span><span></span><strong>miraAI</strong></div><div class="product-canvas"><p>${escape(locale.hero.visualTitle)}</p><div class="flow">${locale.hero.visualSteps.map((step, index) => `<div><span>0${index + 1}</span><strong>${escape(step)}</strong></div>`).join("")}</div></div></div>
+			<div class="hero-product" data-entrance><div class="product-bar"><span></span><span></span><span></span><small class="demo-tag">${escape(locale.demo.controls.live)}</small><strong>miraAI</strong></div><div class="product-canvas"><div class="sim" data-autonomous="hero"><p class="sim-kicker">${escape(locale.hero.visualTitle)}</p><div class="sim-question"><strong>${escape(locale.demo.hero.question)}</strong><ul class="sim-context">${locale.demo.hero.context.map(c => `<li>${escape(c)}</li>`).join("")}</ul></div><div class="sim-route"><div class="flow" data-sim-steps>${locale.hero.visualSteps.map((step, index) => `<div data-sim-step="${index}"><span>0${index + 1}</span><strong>${escape(step)}</strong></div>`).join("")}</div><div class="sim-trace" data-sim-trace></div></div><div class="sim-result" data-sim-result><strong>${escape(locale.demo.hero.result)}</strong><span>${escape(locale.demo.hero.resultText)}</span></div><button class="demo-toggle hero-toggle" type="button" data-autoplay aria-pressed="true" aria-label="${escape(locale.demo.controls.pause)}" data-label-play="${escape(locale.demo.controls.play)}" data-label-pause="${escape(locale.demo.controls.pause)}">${icon("play", "icon-play")}${icon("pause", "icon-pause")}<span data-autoplay-label>${escape(locale.demo.controls.pause)}</span></button></div></div></div>
 		</div></section>
 		<section class="section" id="value"><div class="shell"><header class="section-heading reveal"><p class="eyebrow">${escape(locale.value.eyebrow)}</p><h2>${escape(locale.value.title)}</h2><p>${escape(locale.value.text)}</p></header><div class="value-grid">${outcomeCards}</div></div></section>
 		<section class="section platform-section" id="platform"><div class="shell"><header class="section-heading section-heading-light reveal"><p class="eyebrow">${escape(locale.platform.eyebrow)}</p><h2>${escape(locale.platform.title)}</h2><p>${escape(locale.platform.text)}</p></header><div class="platform-story"><div class="platform-visual" aria-hidden="true"><div class="orbit orbit-a"></div><div class="orbit orbit-b"></div><div class="platform-core">miraAI</div>${orbitLabels}</div><div class="platform-steps">${platformSteps}</div></div></div></section>
 		<section class="section" id="security"><div class="shell"><header class="section-heading reveal"><p class="eyebrow">${escape(locale.assurance.eyebrow)}</p><h2>${escape(locale.assurance.title)}</h2><p>${escape(locale.assurance.text)}</p></header><div class="assurance-grid">${assurance}</div></div></section>
+		<section class="section theater-section" id="demo"><div class="shell"><header class="section-heading reveal"><p class="eyebrow">${escape(locale.demo.eyebrow)}</p><h2>${escape(locale.demo.title)}</h2><p>${escape(locale.demo.text)}</p></header><div class="theater reveal" data-autonomous="theater"><div class="theater-viewport"><div class="theater-track">${theaterSlides}</div><div class="theater-progress" data-theater-progress></div></div><div class="theater-controls"><button class="gallery-arrow" type="button" data-theater-prev aria-label="${escape(locale.useCases.previous)}">${icon("arrow")}</button><div class="gallery-dots" data-theater-dots>${theaterDots}</div><p class="gallery-status" aria-live="polite" data-status-template="${escape(locale.demo.status)}"></p><button class="demo-toggle" type="button" data-autoplay aria-pressed="true" aria-label="${escape(locale.demo.controls.pause)}" data-label-play="${escape(locale.demo.controls.play)}" data-label-pause="${escape(locale.demo.controls.pause)}">${icon("play", "icon-play")}${icon("pause", "icon-pause")}<span data-autoplay-label>${escape(locale.demo.controls.pause)}</span></button><button class="gallery-arrow" type="button" data-theater-next aria-label="${escape(locale.useCases.next)}">${icon("arrow")}</button></div></div></div></section>
 		<section class="section case-section" id="use-cases"><div class="shell"><header class="section-heading reveal"><p class="eyebrow">${escape(locale.useCases.eyebrow)}</p><h2>${escape(locale.useCases.title)}</h2><p>${escape(locale.useCases.text)}</p></header><div class="gallery reveal" data-gallery><div class="gallery-viewport"><div class="gallery-track">${slides}</div><div class="gallery-progress" data-gallery-progress></div></div><div class="gallery-controls"><button class="gallery-arrow" type="button" data-gallery-prev aria-label="${escape(locale.useCases.previous)}">${icon("arrow")}</button><div class="gallery-dots">${dots}</div><p class="gallery-status" aria-live="polite" data-status-template="${escape(locale.useCases.status)}"></p><button class="gallery-arrow" type="button" data-gallery-next aria-label="${escape(locale.useCases.next)}">${icon("arrow")}</button></div></div></div></section>
 		<section class="section integrations-section"><div class="shell"><header class="section-heading reveal"><p class="eyebrow">${escape(locale.integrations.eyebrow)}</p><h2>${escape(locale.integrations.title)}</h2><p>${escape(locale.integrations.text)}</p></header><div class="integration-grid">${integrations}</div></div></section>
 		<section class="section delivery-section"><div class="shell split-heading"><header class="section-heading reveal"><p class="eyebrow">${escape(locale.deployment.eyebrow)}</p><h2>${escape(locale.deployment.title)}</h2><p>${escape(locale.deployment.text)}</p></header><ol class="delivery-list">${deployment}</ol></div></section>
