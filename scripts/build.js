@@ -23,6 +23,11 @@ function validate() {
     if (locale.demo.theater.length < 3) errors.push(`${language.code}: at least 3 theater scenarios required`);
     if (!locale.demo.controls.play || !locale.demo.controls.pause || !locale.demo.controls.live) errors.push(`${language.code}: demo controls (play/pause/live) required`);
     if (!locale.demo.hero.question || !locale.demo.hero.result) errors.push(`${language.code}: demo hero question/result required`);
+    if (locale.hero.visualSteps.length < 4) errors.push(`${language.code}: at least 4 hero visual steps required`);
+    locale.demo.theater.forEach((scenario, index) => {
+      if (!scenario[3] || !scenario[3].length) errors.push(`${language.code}: theater scenario ${index + 1} needs chips`);
+      if (!scenario[4]) errors.push(`${language.code}: theater scenario ${index + 1} needs a result`);
+    });
   });
   if (errors.length) throw new Error(errors.join("\n"));
   console.log(`Validated ${common.languages.length} locales.`);
@@ -54,6 +59,10 @@ function validateSite() {
     if (!fs.existsSync(page)) return errors.push(`${canonical} page not found — run npm run build first`);
     const html = fs.readFileSync(page, "utf8");
     if (!html.includes(`<link rel="canonical" href="${canonical}">`)) errors.push(`${route}: canonical mismatch`);
+    if (!html.includes(`<html lang="${route}">`)) errors.push(`${route}: html lang mismatch`);
+    if (!html.includes(`<meta property="og:image" content="${site}/assets/og-image.png">`)) errors.push(`${route}: missing og:image`);
+    if (!html.includes(`<link rel="icon" type="image/svg+xml"`)) errors.push(`${route}: missing local svg favicon`);
+    if (!html.includes(`.sim-result{opacity:1`)) errors.push(`${route}: missing no-JS sim fallback`);
     common.languages.forEach(language => {
       const link = `<link rel="alternate" hreflang="${language.code}" href="${site}/${language.path}/">`;
       if (!html.includes(link)) errors.push(`${route}: missing hreflang ${language.code}`);
@@ -101,6 +110,7 @@ function render(locale, route, rootPage = false) {
   const navIds = ["overview", "value", "platform", "security", "demo", "use-cases", "resources"];
   const langLinks = common.languages.map(language => `<a lang="${language.code}" href="${hrefFor(language)}"${language.code === route ? ' aria-current="page"' : ""}>${language.label}</a>`).join("");
   const alternate = common.languages.map(language => `<link rel="alternate" hreflang="${language.code}" href="${site}/${language.path}/">`).join("\n\t");
+  const ogLocale = { "en-US": "en_US", fr: "fr_FR", de: "de_DE", ja: "ja_JP", "zh-Hans": "zh_CN" }[route] || "en_US";
   const nav = locale.nav.map((label, index) => `<a href="#${navIds[index]}">${escape(label)}</a>`).join("");
   const outcomeCards = locale.value.cards.map((item, index) => card(item[0], item[1], index)).join("");
   const platformSteps = locale.platform.steps.map((item, index) => `<article class="platform-step${index === 0 ? " is-active" : ""}" data-platform-step="${index}" tabindex="0"><span>${escape(item[0])}</span><div><h3>${escape(item[1])}</h3><p>${escape(item[2])}</p></div></article>`).join("");
@@ -130,13 +140,13 @@ function render(locale, route, rootPage = false) {
 	<link rel="canonical" href="${canonical}">
 	${alternate}
 	<link rel="alternate" hreflang="x-default" href="${site}/en-us/">
-	<meta property="og:type" content="website"><meta property="og:title" content="${escape(locale.metaTitle)}"><meta property="og:description" content="${escape(locale.metaDescription)}"><meta property="og:url" content="${canonical}">
-	<link rel="icon" href="https://d2b8lqy494c4mo.cloudfront.net/mss/images/favicon.ico">
+	<meta property="og:type" content="website"><meta property="og:site_name" content="Miracle Software Systems"><meta property="og:title" content="${escape(locale.metaTitle)}"><meta property="og:description" content="${escape(locale.metaDescription)}"><meta property="og:url" content="${canonical}"><meta property="og:locale" content="${ogLocale}"><meta property="og:image" content="${site}/assets/og-image.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${escape(locale.metaTitle)}"><meta name="twitter:description" content="${escape(locale.metaDescription)}"><meta name="twitter:image" content="${site}/assets/og-image.png">
+	<link rel="icon" type="image/svg+xml" href="${prefix}assets/favicon.svg"><link rel="apple-touch-icon" href="${prefix}assets/apple-touch-icon.png">
 	<link rel="preload" href="${prefix}assets/fonts/montserrat-latin.woff2" as="font" type="font/woff2" crossorigin>
 	<link rel="stylesheet" href="${prefix}assets/fonts/montserrat.css">
 	<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;600;700&family=Noto+Sans+SC:wght@500;600;700&display=swap" media="print" onload="this.media='all'">
-	<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;600;700&family=Noto+Sans+SC:wght@500;600;700&display=swap"><style>.gallery-track{display:block}</style></noscript>
+	<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;600;700&family=Noto+Sans+SC:wght@500;600;700&display=swap"><style>.gallery-track{display:block}.sim-result{opacity:1;transform:none}.sim [data-sim-step]{border-color:rgba(0,170,231,.4)}</style></noscript>
 	<link rel="stylesheet" href="${prefix}assets/site.css">
 	<script>try{document.documentElement.dataset.theme=localStorage.getItem('mira-theme')||'light'}catch(e){document.documentElement.dataset.theme='light'}</script>
 	<script type="application/ld+json">${schema}</script>

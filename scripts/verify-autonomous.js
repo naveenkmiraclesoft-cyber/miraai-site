@@ -142,6 +142,7 @@ async function run() {
     await client.send("Runtime.enable");
     const initialMedia = JSON.parse((await client.send("Runtime.evaluate", { expression: "JSON.stringify({reduce: matchMedia('(prefers-reduced-motion: reduce)').matches, quiet: matchMedia('(prefers-reduced-motion: no-preference)').matches})", returnByValue: true })).result.value);
     console.log("autonomous: initial motion preference ->", JSON.stringify(initialMedia));
+    await client.send("Emulation.setDeviceMetricsOverride", { width: 1440, height: 2200, deviceScaleFactor: 1, mobile: false });
     await client.send("Emulation.setEmulatedMedia", { features: [{ name: "prefers-reduced-motion", value: "no-preference" }] });
     await client.send("Page.reload");
     await waitFor(client, "document.readyState === 'complete' && !!document.querySelector('.sim[data-autonomous=\"hero\"]')");
@@ -166,6 +167,10 @@ async function run() {
     const theatreAdvanced = await waitUntil(client, "document.querySelector('.theater [data-status-template]').textContent.indexOf('Scenario 2') === 0", 15000);
     console.log("autonomous: theater advanced ->", theatreAdvanced);
     if (!theatreAdvanced) throw new Error("Theater did not auto-advance to scenario 2");
+    const beforeKeys = (await client.send("Runtime.evaluate", { expression: "document.querySelector('.theater [data-status-template]').textContent", returnByValue: true })).result.value;
+    await client.send("Runtime.evaluate", { expression: "document.querySelector('.theater[data-autonomous]').dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }))" });
+    const afterKeys = (await client.send("Runtime.evaluate", { expression: "document.querySelector('.theater [data-status-template]').textContent", returnByValue: true })).result.value;
+    if (afterKeys === beforeKeys) throw new Error(`Theater arrow keys did not advance: ${beforeKeys}`);
 
     await client.send("Runtime.evaluate", { expression: "document.querySelector('.hero-toggle').click()" });
     const paused = await client.send("Runtime.evaluate", { expression: "JSON.stringify({pressed: document.querySelector('.hero-toggle').getAttribute('aria-pressed'), label: document.querySelector('.hero-toggle [data-autoplay-label]').textContent})", returnByValue: true });

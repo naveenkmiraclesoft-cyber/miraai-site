@@ -122,7 +122,8 @@ async function run() {
       expression: `JSON.stringify({
         platform: getComputedStyle(document.querySelector('.platform-section .section-heading h2')).color,
         delivery: getComputedStyle(document.querySelector('.delivery-section .section-heading h2')).color,
-        french: new URL(document.querySelector('.language-menu a[lang="fr"]').getAttribute('href'), location.href).pathname
+        french: new URL(document.querySelector('.language-menu a[lang="fr"]').getAttribute('href'), location.href).pathname,
+        themeColor: document.getElementById('themeColorMeta').getAttribute('content')
       })`,
       returnByValue: true
     });
@@ -130,19 +131,22 @@ async function run() {
     const lightResult = JSON.parse(light.result.value);
     if (lightResult.platform !== "rgb(255, 255, 255)" || lightResult.delivery !== "rgb(255, 255, 255)") throw new Error(`Dark-band title contrast failed: ${JSON.stringify(lightResult)}`);
     if (lightResult.french !== "/fr/") throw new Error(`Language route resolved to ${lightResult.french}`);
+    if (lightResult.themeColor !== "#f5f7fa") throw new Error(`Light theme-color meta: ${lightResult.themeColor}`);
 
     await client.send("Runtime.evaluate", { expression: "localStorage.setItem('mira-theme','dark'); location.reload()" });
     await waitFor(client, "document.readyState === 'complete' && document.documentElement.dataset.theme === 'dark'");
     const dark = await client.send("Runtime.evaluate", {
       expression: `JSON.stringify({
         standard: getComputedStyle(document.querySelector('#value .section-heading h2')).color,
-        platform: getComputedStyle(document.querySelector('.platform-section .section-heading h2')).color
+        platform: getComputedStyle(document.querySelector('.platform-section .section-heading h2')).color,
+        themeColor: document.getElementById('themeColorMeta').getAttribute('content')
       })`,
       returnByValue: true
     });
     if (typeof dark.result.value !== "string") throw new Error(`Dark-theme evaluation failed: ${JSON.stringify(dark)}`);
     const darkResult = JSON.parse(dark.result.value);
     if (darkResult.standard !== "rgb(247, 249, 252)" || darkResult.platform !== "rgb(255, 255, 255)") throw new Error(`Dark-theme title contrast failed: ${JSON.stringify(darkResult)}`);
+    if (darkResult.themeColor !== "#061525") throw new Error(`Dark theme-color meta: ${darkResult.themeColor}`);
 
     client.close();
     console.log("Browser smoke test passed: locale routes and section title contrast are correct.");
