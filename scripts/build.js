@@ -29,6 +29,9 @@ function validate() {
       if (!scenario[4]) errors.push(`${language.code}: theater scenario ${index + 1} needs a result`);
     });
   });
+  ["heading", "text", "home"].forEach(key => {
+    if (!common.notFound || !common.notFound[key]) errors.push(`common.notFound: missing ${key}`);
+  });
   if (errors.length) throw new Error(errors.join("\n"));
   console.log(`Validated ${common.languages.length} locales.`);
 }
@@ -51,16 +54,17 @@ function validateSite() {
   if (!fs.existsSync(robotsFile)) errors.push("robots.txt not found — run npm run build first");
   else if (!fs.readFileSync(robotsFile, "utf8").includes(`${site}/sitemap.xml`)) errors.push("robots.txt missing sitemap reference");
 
-  const pages = [{ route: "en-US", page: path.join(root, "index.html"), canonical: `${site}/` }].concat(
-    common.languages.map(language => ({ route: language.code, page: path.join(root, language.path, "index.html"), canonical: `${site}/${language.path}/` }))
+  const pages = [{ route: "en-US", path: "en-us", page: path.join(root, "index.html"), canonical: `${site}/` }].concat(
+    common.languages.map(language => ({ route: language.code, path: language.path, page: path.join(root, language.path, "index.html"), canonical: `${site}/${language.path}/` }))
   );
 
-  pages.forEach(({ route, page, canonical }) => {
+  pages.forEach(({ route, path: routePath, page, canonical }) => {
     if (!fs.existsSync(page)) return errors.push(`${canonical} page not found — run npm run build first`);
     const html = fs.readFileSync(page, "utf8");
     if (!html.includes(`<link rel="canonical" href="${canonical}">`)) errors.push(`${route}: canonical mismatch`);
     if (!html.includes(`<html lang="${route}">`)) errors.push(`${route}: html lang mismatch`);
-    if (!html.includes(`<meta property="og:image" content="${site}/assets/og-image.png">`)) errors.push(`${route}: missing og:image`);
+    if (!html.includes(`<meta property="og:image" content="${site}/assets/og-${routePath}.png">`)) errors.push(`${route}: missing per-locale og:image`);
+    if (!fs.existsSync(path.join(root, "assets", `og-${routePath}.png`))) errors.push(`${route}: missing og image asset og-${routePath}.png`);
     if (!html.includes(`<link rel="icon" type="image/svg+xml"`)) errors.push(`${route}: missing local svg favicon`);
     if (!html.includes(`.sim-result{opacity:1`)) errors.push(`${route}: missing no-JS sim fallback`);
     common.languages.forEach(language => {
@@ -76,8 +80,19 @@ function validateSite() {
     if (!html.includes('data-autonomous="theater"')) errors.push(`${route}: missing theater demo`);
   });
 
+  const errFile = path.join(root, "404.html");
+  if (!fs.existsSync(errFile)) errors.push("404.html not found — run npm run build first");
+  else {
+    const errHtml = fs.readFileSync(errFile, "utf8");
+    if (!errHtml.includes(`<h1>${common.notFound.heading}</h1>`)) errors.push("404.html missing notFound heading");
+    if (!errHtml.includes('name="robots" content="noindex"')) errors.push("404.html missing noindex");
+    common.languages.forEach(language => {
+      if (!errHtml.includes(`href="${site}/${language.path}/"`)) errors.push(`404.html missing link to ${language.path}`);
+    });
+  }
+
   if (errors.length) throw new Error(errors.join("\n"));
-  console.log(`Validated built site: ${pages.length} pages, sitemap, robots.`);
+  console.log(`Validated built site: ${pages.length} pages, 404, sitemap, robots.`);
 }
 
 function icon(name, extra) {
@@ -140,7 +155,7 @@ function render(locale, route, rootPage = false) {
 	<link rel="canonical" href="${canonical}">
 	${alternate}
 	<link rel="alternate" hreflang="x-default" href="${site}/en-us/">
-	<meta property="og:type" content="website"><meta property="og:site_name" content="Miracle Software Systems"><meta property="og:title" content="${escape(locale.metaTitle)}"><meta property="og:description" content="${escape(locale.metaDescription)}"><meta property="og:url" content="${canonical}"><meta property="og:locale" content="${ogLocale}"><meta property="og:image" content="${site}/assets/og-image.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${escape(locale.metaTitle)}"><meta name="twitter:description" content="${escape(locale.metaDescription)}"><meta name="twitter:image" content="${site}/assets/og-image.png">
+	<meta property="og:type" content="website"><meta property="og:site_name" content="Miracle Software Systems"><meta property="og:title" content="${escape(locale.metaTitle)}"><meta property="og:description" content="${escape(locale.metaDescription)}"><meta property="og:url" content="${canonical}"><meta property="og:locale" content="${ogLocale}"><meta property="og:image" content="${site}/assets/og-${current.path}.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${escape(locale.metaTitle)}"><meta name="twitter:description" content="${escape(locale.metaDescription)}"><meta name="twitter:image" content="${site}/assets/og-${current.path}.png">
 	<link rel="icon" type="image/svg+xml" href="${prefix}assets/favicon.svg"><link rel="apple-touch-icon" href="${prefix}assets/apple-touch-icon.png">
 	<link rel="preload" href="${prefix}assets/fonts/montserrat-latin.woff2" as="font" type="font/woff2" crossorigin>
 	<link rel="stylesheet" href="${prefix}assets/fonts/montserrat.css">
@@ -148,7 +163,7 @@ function render(locale, route, rootPage = false) {
 	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;600;700&family=Noto+Sans+SC:wght@500;600;700&display=swap" media="print" onload="this.media='all'">
 	<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;600;700&family=Noto+Sans+SC:wght@500;600;700&display=swap"><style>.gallery-track{display:block}.sim-result{opacity:1;transform:none}.sim [data-sim-step]{border-color:rgba(0,170,231,.4)}</style></noscript>
 	<link rel="stylesheet" href="${prefix}assets/site.css">
-	<script>try{document.documentElement.dataset.theme=localStorage.getItem('mira-theme')||'light'}catch(e){document.documentElement.dataset.theme='light'}</script>
+	<script>try{var t=localStorage.getItem('mira-theme'),d=document.documentElement,e=document.getElementById('themeColorMeta'),th=t||(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');d.dataset.theme=th;if(!t&&th==='dark'&&e)e.content='#061525'}catch(error){}</script>
 	<script type="application/ld+json">${schema}</script>
 </head>
 <body>
@@ -184,6 +199,45 @@ function render(locale, route, rootPage = false) {
 </body></html>`;
 }
 
+function render404() {
+  const { notFound } = common;
+  const langLinks = common.languages.map(language => `<a lang="${language.code}" href="${site}/${language.path}/">${language.label}</a>`).join("");
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="robots" content="noindex">
+	<title>${escape(notFound.title)}</title>
+	<meta name="description" content="${escape(notFound.text)}">
+	<meta name="theme-color" content="#061525">
+	<link rel="icon" type="image/svg+xml" href="${site}/assets/favicon.svg"><link rel="apple-touch-icon" href="${site}/assets/apple-touch-icon.png">
+	<link rel="stylesheet" href="${site}/assets/fonts/montserrat.css">
+	<link rel="stylesheet" href="${site}/assets/site.css">
+	<style>
+	.error{min-height:100vh;display:flex;align-items:center;background:radial-gradient(900px 480px at 78% -10%,rgba(0,170,231,.28),transparent 60%),radial-gradient(700px 420px at 12% 110%,rgba(50,120,230,.22),transparent 60%),#0a1224;color:#fff;padding:96px 0}
+	.error .shell{max-width:760px}
+	.error h1{font-size:clamp(34px,5vw,54px);line-height:1.08;margin:10px 0 18px}
+	.error p{color:rgba(255,255,255,.74);max-width:560px}
+	.error .button{margin-top:8px}
+	.error nav{display:flex;flex-wrap:wrap;gap:10px;margin-top:36px}
+	.error nav a{color:#fff;padding:9px 14px;border:1px solid rgba(255,255,255,.22);border-radius:999px;font-weight:600;font-size:13px;text-decoration:none}
+	.error nav a:hover{background:#0a94cf;border-color:#0a94cf}
+	</style>
+</head>
+<body>
+	<section class="error"><div class="shell">
+		<a class="brand" href="${site}/" aria-label="miraAI"><img src="${site}/assets/miraai-white-horizontal.svg" alt="miraAI" width="151" height="42"></a>
+		<p class="eyebrow">${escape(notFound.eyebrow)}</p>
+		<h1>${escape(notFound.heading)}</h1>
+		<p>${escape(notFound.text)}</p>
+		<a class="button" href="${site}/">${escape(notFound.home)} ${icon("arrow")}</a>
+		<nav aria-label="Choose language">${langLinks}</nav>
+	</div></section>
+</body>
+</html>`;
+}
+
 function write(file, content) {
   fs.mkdirSync(path.dirname(file), { recursive: true });
   fs.writeFileSync(file, content, "utf8");
@@ -195,7 +249,8 @@ if (process.argv.includes("--validate-site")) { validateSite(); process.exit(0);
 
 common.languages.forEach(language => write(path.join(root, language.path, "index.html"), render(locales[language.code], language.code)));
 write(path.join(root, "index.html"), render(locales["en-US"], "en-US", true));
+write(path.join(root, "404.html"), render404());
 const urls = ["", ...common.languages.map(language => `${language.path}/`)];
 write(path.join(root, "sitemap.xml"), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls.map(url => `\n  <url><loc>${site}/${url}</loc></url>`).join("")}\n</urlset>\n`);
 write(path.join(root, "robots.txt"), `User-agent: *\nAllow: /\nSitemap: ${site}/sitemap.xml\n`);
-console.log(`Built ${common.languages.length + 1} pages.`);
+console.log(`Built ${common.languages.length + 1} pages and 404.`);

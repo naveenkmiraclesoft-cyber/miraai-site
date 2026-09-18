@@ -12,7 +12,14 @@ const common = {
     "Approved product evidence: customer outcomes, metrics, case-study numbers, compliance certifications, and SLA figures.",
     "Executive-briefing scheduling URL: currently https://www.miraclesoft.com/contact pending an approved scheduling link.",
     "Native-language review of fr / de / ja / zh-Hans translations and final English copy sign-off by an authorized stakeholder."
-  ]
+  ],
+  notFound: {
+    title: "miraAI — Page not found",
+    eyebrow: "404",
+    heading: "This page moved or never existed.",
+    text: "The link may be out of date, or the page was relocated. Choose your language to return to the miraAI overview.",
+    home: "Go to the miraAI overview"
+  }
 };
 
 const locales = {

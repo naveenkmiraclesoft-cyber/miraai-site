@@ -39,3 +39,25 @@ jobs:
 
       - name: Browser smoke test (CDP)
         run: npm run test:browser
+
+  autonomous-demo-test:
+    name: Autonomous demo CDP test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build all locale pages
+        run: npm run build
+
+      - name: Autonomous demo test (CDP)
+        run: npm run test:autonomous
