@@ -37,6 +37,9 @@ jobs:
       - name: Validate HTML for all routes
         run: npm run validate:html
 
+      - name: Link and anchor integrity check
+        run: npm run test:links
+
       - name: Browser smoke test (CDP)
         run: npm run test:browser
 

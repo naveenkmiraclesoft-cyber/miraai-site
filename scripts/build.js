@@ -3,7 +3,7 @@ const path = require("path");
 const { common, locales } = require("../src/content");
 
 const root = path.resolve(__dirname, "..");
-const site = "https://naveenkmiraclesoft-cyber.github.io/miraai-site";
+const site = (process.env.SITE_URL || "https://naveenkmiraclesoft-cyber.github.io/miraai-site").replace(/\/+$/, "");
 const required = ["metaTitle", "metaDescription", "skip", "language", "nav", "briefing", "hero", "value", "platform", "assurance", "useCases", "demo", "integrations", "deployment", "resources", "faq", "cta", "footer"];
 
 function escape(value) {
@@ -12,6 +12,19 @@ function escape(value) {
 
 function validate() {
   const errors = [];
+  const baseline = locales[common.languages[0].code];
+  const parity = [
+    ["value.cards", locale => locale.value.cards.length, baseline => baseline.value.cards.length],
+    ["platform.steps", locale => locale.platform.steps.length, baseline => baseline.platform.steps.length],
+    ["assurance.cards", locale => locale.assurance.cards.length, baseline => baseline.assurance.cards.length],
+    ["useCases.slides", locale => locale.useCases.slides.length, baseline => baseline.useCases.slides.length],
+    ["demo.theater", locale => locale.demo.theater.length, baseline => baseline.demo.theater.length],
+    ["integrations.groups", locale => locale.integrations.groups.length, baseline => baseline.integrations.groups.length],
+    ["deployment.steps", locale => locale.deployment.steps.length, baseline => baseline.deployment.steps.length],
+    ["resources.cards", locale => locale.resources.cards.length, baseline => baseline.resources.cards.length],
+    ["faq.items", locale => locale.faq.items.length, baseline => baseline.faq.items.length],
+    ["hero.visualSteps", locale => locale.hero.visualSteps.length, baseline => baseline.hero.visualSteps.length]
+  ];
   common.languages.forEach(language => {
     const locale = locales[language.code];
     if (!locale) return errors.push(`Missing locale: ${language.code}`);
@@ -27,6 +40,9 @@ function validate() {
     locale.demo.theater.forEach((scenario, index) => {
       if (!scenario[3] || !scenario[3].length) errors.push(`${language.code}: theater scenario ${index + 1} needs chips`);
       if (!scenario[4]) errors.push(`${language.code}: theater scenario ${index + 1} needs a result`);
+    });
+    parity.forEach(([name, pick, base]) => {
+      if (pick(locale) !== base(baseline)) errors.push(`${language.code}: ${name} count ${pick(locale)} differs from ${common.languages[0].code} (${base(baseline)})`);
     });
   });
   ["heading", "text", "home"].forEach(key => {
@@ -117,6 +133,84 @@ function card(title, text, index) {
   return `<article class="value-card reveal"><span class="icon-disc">${icon(icons[index % icons.length])}</span><h3>${escape(title)}</h3><p>${escape(text)}</p></article>`;
 }
 
+function composeHead(ctx) {
+  const { route, locale, current, prefix, canonical, alternate, ogLocale, schema, pendingNote } = ctx;
+  return `<!DOCTYPE html>
+<html lang="${route}">
+<head>
+	<meta charset="utf-8">
+<!-- ${pendingNote} -->
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>${escape(locale.metaTitle)}</title>
+	<meta name="description" content="${escape(locale.metaDescription)}">
+	<meta name="theme-color" content="#f5f7fa" id="themeColorMeta">
+	<link rel="canonical" href="${canonical}">
+	${alternate}
+	<link rel="alternate" hreflang="x-default" href="${site}/en-us/">
+	<meta property="og:type" content="website"><meta property="og:site_name" content="Miracle Software Systems"><meta property="og:title" content="${escape(locale.metaTitle)}"><meta property="og:description" content="${escape(locale.metaDescription)}"><meta property="og:url" content="${canonical}"><meta property="og:locale" content="${ogLocale}"><meta property="og:image" content="${site}/assets/og-${current.path}.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${escape(locale.metaTitle)}"><meta name="twitter:description" content="${escape(locale.metaDescription)}"><meta name="twitter:image" content="${site}/assets/og-${current.path}.png">
+	<link rel="icon" type="image/svg+xml" href="${prefix}assets/favicon.svg"><link rel="apple-touch-icon" href="${prefix}assets/apple-touch-icon.png">
+	<link rel="preload" href="${prefix}assets/fonts/montserrat-latin.woff2" as="font" type="font/woff2" crossorigin>
+	<link rel="stylesheet" href="${prefix}assets/fonts/montserrat.css">
+	<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;600;700&family=Noto+Sans+SC:wght@500;600;700&display=swap" media="print" onload="this.media='all'">
+	<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;600;700&family=Noto+Sans+SC:wght@500;600;700&display=swap"><style>.gallery-track{display:block}.sim-result{opacity:1;transform:none}.sim [data-sim-step]{border-color:rgba(0,170,231,.4)}</style></noscript>
+	<link rel="stylesheet" href="${prefix}assets/site.css">
+	<script>try{var t=localStorage.getItem('mira-theme'),d=document.documentElement,e=document.getElementById('themeColorMeta'),th=t||(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');d.dataset.theme=th;if(!t&&th==='dark'&&e)e.content='#061525'}catch(error){}</script>
+	<script type="application/ld+json">${schema}</script>
+</head>`;
+}
+
+function composeHeader(ctx) {
+  const { locale, current, prefix, nav, langLinks, draft, hrefFor } = ctx;
+  return `
+<body>
+	<a class="skip-link" href="#main">${escape(locale.skip)}</a>${draft}
+	<header class="site-header" id="siteHeader"><div class="nav-shell">
+		<a class="brand" href="#overview" aria-label="miraAI"><img src="${prefix}assets/miraai-white-horizontal.svg" alt="miraAI" width="151" height="42"></a>
+		<nav class="desktop-nav" aria-label="Primary">${nav}</nav>
+		<div class="nav-actions">
+			<div class="language"><button class="icon-button language-button" type="button" aria-label="${escape(locale.language)}: ${current.label}" aria-expanded="false" aria-controls="languageMenu">${icon("globe")}<span>${current.label}</span>${icon("chevron")}</button><div class="language-menu" id="languageMenu" hidden>${langLinks}</div></div>
+			<button class="icon-button theme-button" type="button" aria-label="${escape(locale.theme)}">${icon("sun")}</button>
+			<a class="button button-small desktop-cta" href="${common.briefingUrl}">${escape(locale.briefing)}</a>
+			<button class="icon-button menu-button" type="button" aria-expanded="false" aria-controls="mobileNav" aria-label="${escape(locale.menu)}">${icon("menu")}</button>
+		</div>
+	</div><nav class="mobile-nav" id="mobileNav" aria-label="Mobile" hidden>${nav}<a class="button" href="${common.briefingUrl}">${escape(locale.briefing)}</a></nav></header>
+	<main id="main">`;
+}
+
+function composeHero(ctx) {
+  const { locale } = ctx;
+  return `
+		<section class="hero" id="overview"><div class="hero-aurora" aria-hidden="true"></div><div class="shell hero-grid">
+			<div class="hero-copy"><p class="eyebrow" data-entrance>${escape(locale.hero.eyebrow)}</p><h1 data-entrance>${escape(locale.hero.title)}</h1><p class="hero-text" data-entrance>${escape(locale.hero.text)}</p><div class="hero-actions" data-entrance><a class="button" href="${common.briefingUrl}">${escape(locale.briefing)} ${icon("arrow")}</a><a class="button button-secondary" href="#platform">${escape(locale.hero.secondary)}</a></div><ul class="hero-points" data-entrance>${locale.hero.points.map(point => `<li>${icon("check")}${escape(point)}</li>`).join("")}</ul></div>
+			<div class="hero-product" data-entrance><div class="product-bar"><span></span><span></span><span></span><small class="demo-tag">${escape(locale.demo.controls.live)}</small><strong>miraAI</strong></div><div class="product-canvas"><div class="sim" data-autonomous="hero"><p class="sim-kicker">${escape(locale.hero.visualTitle)}</p><div class="sim-question"><strong>${escape(locale.demo.hero.question)}</strong><ul class="sim-context">${locale.demo.hero.context.map(c => `<li>${escape(c)}</li>`).join("")}</ul></div><div class="sim-route"><div class="flow" data-sim-steps>${locale.hero.visualSteps.map((step, index) => `<div data-sim-step="${index}"><span>0${index + 1}</span><strong>${escape(step)}</strong></div>`).join("")}</div><div class="sim-trace" data-sim-trace></div></div><div class="sim-result" data-sim-result><strong>${escape(locale.demo.hero.result)}</strong><span>${escape(locale.demo.hero.resultText)}</span></div><button class="demo-toggle hero-toggle" type="button" data-autoplay aria-pressed="true" aria-label="${escape(locale.demo.controls.pause)}" data-label-play="${escape(locale.demo.controls.play)}" data-label-pause="${escape(locale.demo.controls.pause)}">${icon("play", "icon-play")}${icon("pause", "icon-pause")}<span data-autoplay-label>${escape(locale.demo.controls.pause)}</span></button></div></div></div>
+		</div></section>`;
+}
+
+function composeSections(ctx) {
+  const { locale, outcomeCards, platformSteps, orbitLabels, assurance, theaterSlides, theaterDots, slides, dots, integrations, deployment, resources, faq } = ctx;
+  return `
+		<section class="section" id="value"><div class="shell"><header class="section-heading reveal"><p class="eyebrow">${escape(locale.value.eyebrow)}</p><h2>${escape(locale.value.title)}</h2><p>${escape(locale.value.text)}</p></header><div class="value-grid">${outcomeCards}</div></div></section>
+		<section class="section platform-section" id="platform"><div class="shell"><header class="section-heading section-heading-light reveal"><p class="eyebrow">${escape(locale.platform.eyebrow)}</p><h2>${escape(locale.platform.title)}</h2><p>${escape(locale.platform.text)}</p></header><div class="platform-story"><div class="platform-visual" aria-hidden="true"><div class="orbit orbit-a"></div><div class="orbit orbit-b"></div><div class="platform-core">miraAI</div>${orbitLabels}</div><div class="platform-steps">${platformSteps}</div></div></div></section>
+		<section class="section" id="security"><div class="shell"><header class="section-heading reveal"><p class="eyebrow">${escape(locale.assurance.eyebrow)}</p><h2>${escape(locale.assurance.title)}</h2><p>${escape(locale.assurance.text)}</p></header><div class="assurance-grid">${assurance}</div></div></section>
+		<section class="section theater-section" id="demo"><div class="shell"><header class="section-heading reveal"><p class="eyebrow">${escape(locale.demo.eyebrow)}</p><h2>${escape(locale.demo.title)}</h2><p>${escape(locale.demo.text)}</p></header><div class="theater reveal" data-autonomous="theater"><div class="theater-viewport"><div class="theater-track">${theaterSlides}</div><div class="theater-progress" data-theater-progress></div></div><div class="theater-controls"><button class="gallery-arrow" type="button" data-theater-prev aria-label="${escape(locale.useCases.previous)}">${icon("arrow")}</button><div class="gallery-dots" data-theater-dots>${theaterDots}</div><p class="gallery-status" aria-live="polite" data-status-template="${escape(locale.demo.status)}"></p><button class="demo-toggle" type="button" data-autoplay aria-pressed="true" aria-label="${escape(locale.demo.controls.pause)}" data-label-play="${escape(locale.demo.controls.play)}" data-label-pause="${escape(locale.demo.controls.pause)}">${icon("play", "icon-play")}${icon("pause", "icon-pause")}<span data-autoplay-label>${escape(locale.demo.controls.pause)}</span></button><button class="gallery-arrow" type="button" data-theater-next aria-label="${escape(locale.useCases.next)}">${icon("arrow")}</button></div></div></div></section>
+		<section class="section case-section" id="use-cases"><div class="shell"><header class="section-heading reveal"><p class="eyebrow">${escape(locale.useCases.eyebrow)}</p><h2>${escape(locale.useCases.title)}</h2><p>${escape(locale.useCases.text)}</p></header><div class="gallery reveal" data-gallery><div class="gallery-viewport"><div class="gallery-track">${slides}</div><div class="gallery-progress" data-gallery-progress></div></div><div class="gallery-controls"><button class="gallery-arrow" type="button" data-gallery-prev aria-label="${escape(locale.useCases.previous)}">${icon("arrow")}</button><div class="gallery-dots">${dots}</div><p class="gallery-status" aria-live="polite" data-status-template="${escape(locale.useCases.status)}"></p><button class="gallery-arrow" type="button" data-gallery-next aria-label="${escape(locale.useCases.next)}">${icon("arrow")}</button></div></div></div></section>
+		<section class="section integrations-section"><div class="shell"><header class="section-heading reveal"><p class="eyebrow">${escape(locale.integrations.eyebrow)}</p><h2>${escape(locale.integrations.title)}</h2><p>${escape(locale.integrations.text)}</p></header><div class="integration-grid">${integrations}</div></div></section>
+		<section class="section delivery-section"><div class="shell split-heading"><header class="section-heading reveal"><p class="eyebrow">${escape(locale.deployment.eyebrow)}</p><h2>${escape(locale.deployment.title)}</h2><p>${escape(locale.deployment.text)}</p></header><ol class="delivery-list">${deployment}</ol></div></section>
+		<section class="section" id="resources"><div class="shell"><header class="section-heading reveal"><p class="eyebrow">${escape(locale.resources.eyebrow)}</p><h2>${escape(locale.resources.title)}</h2></header><div class="resource-grid">${resources}</div></div></section>
+		<section class="section faq-section"><div class="shell faq-layout"><header class="section-heading reveal"><p class="eyebrow">${escape(locale.faq.eyebrow)}</p><h2>${escape(locale.faq.title)}</h2></header><div class="faq-list reveal">${faq}</div></div></section>
+		<section class="section cta-section"><div class="shell"><div class="cta-panel reveal"><p class="eyebrow">${escape(locale.cta.eyebrow)}</p><h2>${escape(locale.cta.title)}</h2><p>${escape(locale.cta.text)}</p><a class="button button-light" href="${common.briefingUrl}">${escape(locale.briefing)} ${icon("arrow")}</a><small>${escape(locale.cta.note)}</small></div></div></section>
+	</main>`;
+}
+
+function composeFooter(ctx) {
+  const { locale, prefix } = ctx;
+  return `
+	<footer class="footer"><div class="shell footer-grid"><div><img src="${prefix}assets/miracle-logo-white.svg" alt="Miracle Software Systems" width="188" height="42"><p>${escape(locale.footer.text)}</p></div><nav aria-label="${escape(locale.footer.company)}"><strong>${escape(locale.footer.company)}</strong><a href="https://www.miraclesoft.com/company/">Miracle Software Systems</a><a href="https://www.miraclesoft.com/company/global-presence">Global Presence</a></nav><nav aria-label="${escape(locale.footer.product)}"><strong>${escape(locale.footer.product)}</strong><a href="${common.productUrl}">miraAI</a><a href="#platform">${escape(locale.nav[2])}</a></nav><nav aria-label="${escape(locale.footer.connect)}"><strong>${escape(locale.footer.connect)}</strong><a href="${common.briefingUrl}">${escape(locale.briefing)}</a><a href="https://www.miraclesoft.com/privacy-policy">${escape(locale.footer.privacy)}</a></nav></div><div class="shell footer-bottom">© 2026 Miracle Software Systems, Inc. ${escape(locale.footer.rights)}</div></footer>
+	<script src="${prefix}assets/site.js" defer></script>
+</body></html>`;
+}
+
 function render(locale, route, rootPage = false) {
   const prefix = rootPage ? "" : "../";
   const current = common.languages.find(item => item.code === route) || common.languages[0];
@@ -143,60 +237,13 @@ function render(locale, route, rootPage = false) {
   const pendingNote = "TODO — content to be filled later:\n" + common.pending.map(item => "- " + item).join("\n");
   const schema = JSON.stringify({ "@context": "https://schema.org", "@type": "SoftwareApplication", name: "miraAI", applicationCategory: "BusinessApplication", description: locale.metaDescription, url: canonical, publisher: { "@type": "Organization", name: "Miracle Software Systems, Inc.", url: "https://www.miraclesoft.com/" } }).replace(/</g, "\\u003c");
 
-  return `<!DOCTYPE html>
-<html lang="${route}">
-<head>
-	<meta charset="utf-8">
-<!-- ${pendingNote} -->
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>${escape(locale.metaTitle)}</title>
-	<meta name="description" content="${escape(locale.metaDescription)}">
-	<meta name="theme-color" content="#f5f7fa" id="themeColorMeta">
-	<link rel="canonical" href="${canonical}">
-	${alternate}
-	<link rel="alternate" hreflang="x-default" href="${site}/en-us/">
-	<meta property="og:type" content="website"><meta property="og:site_name" content="Miracle Software Systems"><meta property="og:title" content="${escape(locale.metaTitle)}"><meta property="og:description" content="${escape(locale.metaDescription)}"><meta property="og:url" content="${canonical}"><meta property="og:locale" content="${ogLocale}"><meta property="og:image" content="${site}/assets/og-${current.path}.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${escape(locale.metaTitle)}"><meta name="twitter:description" content="${escape(locale.metaDescription)}"><meta name="twitter:image" content="${site}/assets/og-${current.path}.png">
-	<link rel="icon" type="image/svg+xml" href="${prefix}assets/favicon.svg"><link rel="apple-touch-icon" href="${prefix}assets/apple-touch-icon.png">
-	<link rel="preload" href="${prefix}assets/fonts/montserrat-latin.woff2" as="font" type="font/woff2" crossorigin>
-	<link rel="stylesheet" href="${prefix}assets/fonts/montserrat.css">
-	<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;600;700&family=Noto+Sans+SC:wght@500;600;700&display=swap" media="print" onload="this.media='all'">
-	<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;600;700&family=Noto+Sans+SC:wght@500;600;700&display=swap"><style>.gallery-track{display:block}.sim-result{opacity:1;transform:none}.sim [data-sim-step]{border-color:rgba(0,170,231,.4)}</style></noscript>
-	<link rel="stylesheet" href="${prefix}assets/site.css">
-	<script>try{var t=localStorage.getItem('mira-theme'),d=document.documentElement,e=document.getElementById('themeColorMeta'),th=t||(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');d.dataset.theme=th;if(!t&&th==='dark'&&e)e.content='#061525'}catch(error){}</script>
-	<script type="application/ld+json">${schema}</script>
-</head>
-<body>
-	<a class="skip-link" href="#main">${escape(locale.skip)}</a>${draft}
-	<header class="site-header" id="siteHeader"><div class="nav-shell">
-		<a class="brand" href="#overview" aria-label="miraAI"><img src="${prefix}assets/miraai-white-horizontal.svg" alt="miraAI" width="151" height="42"></a>
-		<nav class="desktop-nav" aria-label="Primary">${nav}</nav>
-		<div class="nav-actions">
-			<div class="language"><button class="icon-button language-button" type="button" aria-label="${escape(locale.language)}: ${current.label}" aria-expanded="false" aria-controls="languageMenu">${icon("globe")}<span>${current.label}</span>${icon("chevron")}</button><div class="language-menu" id="languageMenu" hidden>${langLinks}</div></div>
-			<button class="icon-button theme-button" type="button" aria-label="${escape(locale.theme)}">${icon("sun")}</button>
-			<a class="button button-small desktop-cta" href="${common.briefingUrl}">${escape(locale.briefing)}</a>
-			<button class="icon-button menu-button" type="button" aria-expanded="false" aria-controls="mobileNav" aria-label="${escape(locale.menu)}">${icon("menu")}</button>
-		</div>
-	</div><nav class="mobile-nav" id="mobileNav" aria-label="Mobile" hidden>${nav}<a class="button" href="${common.briefingUrl}">${escape(locale.briefing)}</a></nav></header>
-	<main id="main">
-		<section class="hero" id="overview"><div class="hero-aurora" aria-hidden="true"></div><div class="shell hero-grid">
-			<div class="hero-copy"><p class="eyebrow" data-entrance>${escape(locale.hero.eyebrow)}</p><h1 data-entrance>${escape(locale.hero.title)}</h1><p class="hero-text" data-entrance>${escape(locale.hero.text)}</p><div class="hero-actions" data-entrance><a class="button" href="${common.briefingUrl}">${escape(locale.briefing)} ${icon("arrow")}</a><a class="button button-secondary" href="#platform">${escape(locale.hero.secondary)}</a></div><ul class="hero-points" data-entrance>${locale.hero.points.map(point => `<li>${icon("check")}${escape(point)}</li>`).join("")}</ul></div>
-			<div class="hero-product" data-entrance><div class="product-bar"><span></span><span></span><span></span><small class="demo-tag">${escape(locale.demo.controls.live)}</small><strong>miraAI</strong></div><div class="product-canvas"><div class="sim" data-autonomous="hero"><p class="sim-kicker">${escape(locale.hero.visualTitle)}</p><div class="sim-question"><strong>${escape(locale.demo.hero.question)}</strong><ul class="sim-context">${locale.demo.hero.context.map(c => `<li>${escape(c)}</li>`).join("")}</ul></div><div class="sim-route"><div class="flow" data-sim-steps>${locale.hero.visualSteps.map((step, index) => `<div data-sim-step="${index}"><span>0${index + 1}</span><strong>${escape(step)}</strong></div>`).join("")}</div><div class="sim-trace" data-sim-trace></div></div><div class="sim-result" data-sim-result><strong>${escape(locale.demo.hero.result)}</strong><span>${escape(locale.demo.hero.resultText)}</span></div><button class="demo-toggle hero-toggle" type="button" data-autoplay aria-pressed="true" aria-label="${escape(locale.demo.controls.pause)}" data-label-play="${escape(locale.demo.controls.play)}" data-label-pause="${escape(locale.demo.controls.pause)}">${icon("play", "icon-play")}${icon("pause", "icon-pause")}<span data-autoplay-label>${escape(locale.demo.controls.pause)}</span></button></div></div></div>
-		</div></section>
-		<section class="section" id="value"><div class="shell"><header class="section-heading reveal"><p class="eyebrow">${escape(locale.value.eyebrow)}</p><h2>${escape(locale.value.title)}</h2><p>${escape(locale.value.text)}</p></header><div class="value-grid">${outcomeCards}</div></div></section>
-		<section class="section platform-section" id="platform"><div class="shell"><header class="section-heading section-heading-light reveal"><p class="eyebrow">${escape(locale.platform.eyebrow)}</p><h2>${escape(locale.platform.title)}</h2><p>${escape(locale.platform.text)}</p></header><div class="platform-story"><div class="platform-visual" aria-hidden="true"><div class="orbit orbit-a"></div><div class="orbit orbit-b"></div><div class="platform-core">miraAI</div>${orbitLabels}</div><div class="platform-steps">${platformSteps}</div></div></div></section>
-		<section class="section" id="security"><div class="shell"><header class="section-heading reveal"><p class="eyebrow">${escape(locale.assurance.eyebrow)}</p><h2>${escape(locale.assurance.title)}</h2><p>${escape(locale.assurance.text)}</p></header><div class="assurance-grid">${assurance}</div></div></section>
-		<section class="section theater-section" id="demo"><div class="shell"><header class="section-heading reveal"><p class="eyebrow">${escape(locale.demo.eyebrow)}</p><h2>${escape(locale.demo.title)}</h2><p>${escape(locale.demo.text)}</p></header><div class="theater reveal" data-autonomous="theater"><div class="theater-viewport"><div class="theater-track">${theaterSlides}</div><div class="theater-progress" data-theater-progress></div></div><div class="theater-controls"><button class="gallery-arrow" type="button" data-theater-prev aria-label="${escape(locale.useCases.previous)}">${icon("arrow")}</button><div class="gallery-dots" data-theater-dots>${theaterDots}</div><p class="gallery-status" aria-live="polite" data-status-template="${escape(locale.demo.status)}"></p><button class="demo-toggle" type="button" data-autoplay aria-pressed="true" aria-label="${escape(locale.demo.controls.pause)}" data-label-play="${escape(locale.demo.controls.play)}" data-label-pause="${escape(locale.demo.controls.pause)}">${icon("play", "icon-play")}${icon("pause", "icon-pause")}<span data-autoplay-label>${escape(locale.demo.controls.pause)}</span></button><button class="gallery-arrow" type="button" data-theater-next aria-label="${escape(locale.useCases.next)}">${icon("arrow")}</button></div></div></div></section>
-		<section class="section case-section" id="use-cases"><div class="shell"><header class="section-heading reveal"><p class="eyebrow">${escape(locale.useCases.eyebrow)}</p><h2>${escape(locale.useCases.title)}</h2><p>${escape(locale.useCases.text)}</p></header><div class="gallery reveal" data-gallery><div class="gallery-viewport"><div class="gallery-track">${slides}</div><div class="gallery-progress" data-gallery-progress></div></div><div class="gallery-controls"><button class="gallery-arrow" type="button" data-gallery-prev aria-label="${escape(locale.useCases.previous)}">${icon("arrow")}</button><div class="gallery-dots">${dots}</div><p class="gallery-status" aria-live="polite" data-status-template="${escape(locale.useCases.status)}"></p><button class="gallery-arrow" type="button" data-gallery-next aria-label="${escape(locale.useCases.next)}">${icon("arrow")}</button></div></div></div></section>
-		<section class="section integrations-section"><div class="shell"><header class="section-heading reveal"><p class="eyebrow">${escape(locale.integrations.eyebrow)}</p><h2>${escape(locale.integrations.title)}</h2><p>${escape(locale.integrations.text)}</p></header><div class="integration-grid">${integrations}</div></div></section>
-		<section class="section delivery-section"><div class="shell split-heading"><header class="section-heading reveal"><p class="eyebrow">${escape(locale.deployment.eyebrow)}</p><h2>${escape(locale.deployment.title)}</h2><p>${escape(locale.deployment.text)}</p></header><ol class="delivery-list">${deployment}</ol></div></section>
-		<section class="section" id="resources"><div class="shell"><header class="section-heading reveal"><p class="eyebrow">${escape(locale.resources.eyebrow)}</p><h2>${escape(locale.resources.title)}</h2></header><div class="resource-grid">${resources}</div></div></section>
-		<section class="section faq-section"><div class="shell faq-layout"><header class="section-heading reveal"><p class="eyebrow">${escape(locale.faq.eyebrow)}</p><h2>${escape(locale.faq.title)}</h2></header><div class="faq-list reveal">${faq}</div></div></section>
-		<section class="section cta-section"><div class="shell"><div class="cta-panel reveal"><p class="eyebrow">${escape(locale.cta.eyebrow)}</p><h2>${escape(locale.cta.title)}</h2><p>${escape(locale.cta.text)}</p><a class="button button-light" href="${common.briefingUrl}">${escape(locale.briefing)} ${icon("arrow")}</a><small>${escape(locale.cta.note)}</small></div></div></section>
-	</main>
-	<footer class="footer"><div class="shell footer-grid"><div><img src="${prefix}assets/miracle-logo-white.svg" alt="Miracle Software Systems" width="188" height="42"><p>${escape(locale.footer.text)}</p></div><nav aria-label="${escape(locale.footer.company)}"><strong>${escape(locale.footer.company)}</strong><a href="https://www.miraclesoft.com/company/">Miracle Software Systems</a><a href="https://www.miraclesoft.com/company/global-presence">Global Presence</a></nav><nav aria-label="${escape(locale.footer.product)}"><strong>${escape(locale.footer.product)}</strong><a href="${common.productUrl}">miraAI</a><a href="#platform">${escape(locale.nav[2])}</a></nav><nav aria-label="${escape(locale.footer.connect)}"><strong>${escape(locale.footer.connect)}</strong><a href="${common.briefingUrl}">${escape(locale.briefing)}</a><a href="https://www.miraclesoft.com/privacy-policy">${escape(locale.footer.privacy)}</a></nav></div><div class="shell footer-bottom">© 2026 Miracle Software Systems, Inc. ${escape(locale.footer.rights)}</div></footer>
-	<script src="${prefix}assets/site.js" defer></script>
-</body></html>`;
+  const ctx = {
+    route, locale, current, prefix, canonical, hrefFor, alternate, ogLocale,
+    nav, langLinks, draft, pendingNote, schema,
+    outcomeCards, platformSteps, orbitLabels, assurance, theaterSlides, theaterDots,
+    slides, dots, integrations, deployment, resources, faq
+  };
+  return composeHead(ctx) + composeHeader(ctx) + composeHero(ctx) + composeSections(ctx) + composeFooter(ctx);
 }
 
 function render404() {
